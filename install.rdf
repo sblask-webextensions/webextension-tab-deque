@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+    <Description about="urn:mozilla:install-manifest">
+        <em:id>tabdeque@sblask</em:id>
+        <em:name>Tab Deque</em:name>
+        <em:version>0.1.0</em:version>
+        <em:type>2</em:type>
+        <em:creator>Sebastian Blask</em:creator>
+
+        <em:homepageURL>https://github.com/sblask/firefox-tab-deque</em:homepageURL>
+        <em:description>
+            Build a deque of tabs.
+            When the current tab is closed, it is removed from the end of the deque and the next one selected.
+            Opening a tab in background adds it at the beginning, otherwise at the end.
+            Selecting a tab moves it to the end of the deque.
+        </em:description>
+
+        <em:iconURL>chrome://tabdeque/skin/tab-close.png</em:iconURL>
+
+        <em:targetApplication>
+            <Description>
+                <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+                <em:minVersion>26.0</em:minVersion>
+                <em:maxVersion>26.*</em:maxVersion>
+            </Description>
+        </em:targetApplication>
+    </Description>
+</RDF>
+

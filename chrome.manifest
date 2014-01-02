@@ -1,0 +1,5 @@
+content  tabdeque  content/
+skin     tabdeque  classic/1.0  skin/
+
+overlay  chrome://browser/content/browser.xul  chrome://tabdeque/content/overlay.xul
+
