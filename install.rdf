@@ -8,7 +8,7 @@
         <em:creator>Sebastian Blask</em:creator>
 
         <em:homepageURL>https://github.com/sblask/firefox-tab-deque</em:homepageURL>
-        <em:description>Build a deque of tabs. When the current tab is closed, it is removed from the end of the deque and the next one selected. Opening a tab in background adds it at the beginning, otherwise at the end. Selecting a tab moves it to the end of the deque. This should mimic Opera's "Activate first tab opened from current tab" "When closing a tab" setting. New tabs are also opened next to current tab.
+        <em:description>Build a deque of tabs. When the current tab is closed, it is removed from the deque and the next one from the end is selected. Opening a tab in background adds it at the beginning, opening in the foreground at the end of the deque. In both cases, the new tab is opened next to current tab. Selecting a tab moves it to the end of the deque. This should mimic the "Activate the last active tab" "When closing a tab" setting from Opera 12. Note, this is not the same as "most recently used tab" or "last tab selected" other extensions provide.
         </em:description>
 
         <em:iconURL>chrome://tabdeque/skin/tab-close.png</em:iconURL>
