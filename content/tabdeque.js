@@ -10,21 +10,20 @@ var gTabDeque = {
         window.removeEventListener('load', gTabDeque.onLoad, false);
         window.addEventListener('unload', gTabDeque.onUnload, false);
         window.addEventListener("keyup", gTabDeque.onKeyUp, false);
+        // need to listen on window for mousegestures
+        window.addEventListener("mouseup", gTabDeque.onMouseUp, false);
         gBrowser.tabContainer.addEventListener("TabOpen", gTabDeque.onTabOpen, false);
         gBrowser.tabContainer.addEventListener("TabSelect", gTabDeque.onTabSelect, false);
         gBrowser.tabContainer.addEventListener("TabClose", gTabDeque.onTabClose, false);
-        gBrowser.tabContainer.addEventListener("click", gTabDeque.onClick, false);
-        gBrowser.tabContainer.addEventListener("mouseup", gTabDeque.onMouseUp, false);
     },
 
     onUnload: function() {
         window.removeEventListener('unload', gTabDeque.onUnload, false);
         window.removeEventListener("keyup", gTabDeque.onKeyUp, false);
+        window.removeEventListener("mouseup", gTabDeque.onMouseUp, false);
         gBrowser.tabContainer.removeEventListener("TabOpen", gTabDeque.onTabOpen, false);
         gBrowser.tabContainer.removeEventListener("TabSelect", gTabDeque.onTabSelect, false);
         gBrowser.tabContainer.removeEventListener("TabClose", gTabDeque.onTabClose, false);
-        gBrowser.tabContainer.removeEventListener("click", gTabDeque.onClick, false);
-        gBrowser.tabContainer.removeEventListener("mouseup", gTabDeque.onMouseUp, false);
     },
 
     onTabOpen: function(anEvent) {
@@ -42,42 +41,53 @@ var gTabDeque = {
     onTabClose: function(anEvent) {
         var closingTab = anEvent.target;
         gTabDeque.ensureInitialization();
-        if (closingTab.selected) {
-            gTabDeque.deque.pop();
-            var currentIndex = gTabDeque.getTabIndex(closingTab);
-            var nextIndex = gTabDeque.getTabIndex(gTabDeque.getNextTab());
-            // the closing tab is still there when calculating the index,
-            // but not when selecting
-            var adjustment = currentIndex < nextIndex ? -1 : 0;
-            gBrowser.selectTabAtIndex(nextIndex + adjustment);
+        gTabDeque.removeTabFromDeque(closingTab);
+        if (gTabDeque.deque.length == 0) {
+            gTabDeque.mimicAllTabsMinimized();
         } else {
-            gTabDeque.removeTabFromDeque(closingTab);
+            if (closingTab.selected) {
+                var currentIndex = gTabDeque.getTabIndex(closingTab);
+                var nextIndex = gTabDeque.getTabIndex(gTabDeque.getNextTab());
+                // the closing tab is still there when calculating the index,
+                // but not when selecting
+                var adjustment = currentIndex < nextIndex ? -1 : 0;
+                gBrowser.selectTabAtIndex(nextIndex + adjustment);
+            }
         }
     },
 
     // can't differentiate between click on selected or unselected tab
+    // so selectionChanged has to be checked to see whether selection changed
     // the relevant event order is (TabSelect ->) *Down -> *Up -> Click
-    // so these three functions are necessary to check whether selection changed
     onMouseUp: function(anEvent) {
         gTabDeque.ensureInitialization();
-        if (anEvent.target.nodeName == "tab" && anEvent.target.selected && !gTabDeque.selectionChanged) {
-            var newlySelectedTab = gTabDeque.minimizeTab(anEvent.target);
+        if (anEvent.button == 0 &&
+            anEvent.target.nodeName == "tab" &&
+            anEvent.target.selected &&
+            !gTabDeque.selectionChanged) {
+            gTabDeque.minimizeTab(anEvent.target);
         }
-    },
-    onKeyUp: function(anEvent) {
+        // need this for selecting/closing with mouse: click/mousegesture
         gTabDeque.selectionChanged = false;
     },
-    onClick: function(anEvent) {
+    onKeyUp: function(anEvent) {
+        // need this for selecting/closing with keyboard
         gTabDeque.selectionChanged = false;
     },
 
     minimizeTab: function(tab) {
         gTabDeque.removeTabFromDeque(tab);
-        var nextTab = gTabDeque.getNextTab();
-        gBrowser.selectTabAtIndex(gTabDeque.getTabIndex(nextTab));
-        return nextTab;
+        var tabToSelect = undefined;
+        if (gTabDeque.deque.length == 0) {
+            gTabDeque.mimicAllTabsMinimized();
+        } else {
+            gBrowser.selectTabAtIndex(gTabDeque.getTabIndex(gTabDeque.getNextTab()));
+        }
     },
 
+    mimicAllTabsMinimized: function() {
+        document.getElementById("cmd_newNavigatorTab").doCommand();
+    },
     moveTabToDequeBeginning: function(tab) {
         gTabDeque.ensureInitialization();
         // getting duplicates sometimes...
