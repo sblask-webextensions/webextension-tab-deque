@@ -7,30 +7,30 @@ var gTabDeque = {
     lastSelectedTab: undefined,
 
     onLoad: function() {
-	    if ('undefined' == typeof gBrowser) {
-	        return;
-	    }
-	    window.removeEventListener('load', gTabDeque.onLoad, false);
-	    window.addEventListener('unload', gTabDeque.onUnload, false);
-	    gBrowser.tabContainer.addEventListener("TabOpen", gTabDeque.onTabOpen, false);
-	    gBrowser.tabContainer.addEventListener("TabSelect", gTabDeque.onTabSelect, false);
-	    gBrowser.tabContainer.addEventListener("TabClose", gTabDeque.onTabClose, false);
-	    gBrowser.tabContainer.addEventListener("click", gTabDeque.onClick, false);
+        if ('undefined' == typeof gBrowser) {
+            return;
+        }
+        window.removeEventListener('load', gTabDeque.onLoad, false);
+        window.addEventListener('unload', gTabDeque.onUnload, false);
+        gBrowser.tabContainer.addEventListener("TabOpen", gTabDeque.onTabOpen, false);
+        gBrowser.tabContainer.addEventListener("TabSelect", gTabDeque.onTabSelect, false);
+        gBrowser.tabContainer.addEventListener("TabClose", gTabDeque.onTabClose, false);
+        gBrowser.tabContainer.addEventListener("click", gTabDeque.onClick, false);
     },
 
     onUnload: function() {
-	    window.removeEventListener('unload', gTabDeque.onUnload, false);
-	    gBrowser.tabContainer.removeEventListener("TabOpen", gTabDeque.onTabOpen, false);
-	    gBrowser.tabContainer.removeEventListener("TabSelect", gTabDeque.onTabSelect, false);
-	    gBrowser.tabContainer.removeEventListener("TabClose", gTabDeque.onTabClose, false);
-	    gBrowser.tabContainer.removeEventListener("click", gTabDeque.onClick, false);
+        window.removeEventListener('unload', gTabDeque.onUnload, false);
+        gBrowser.tabContainer.removeEventListener("TabOpen", gTabDeque.onTabOpen, false);
+        gBrowser.tabContainer.removeEventListener("TabSelect", gTabDeque.onTabSelect, false);
+        gBrowser.tabContainer.removeEventListener("TabClose", gTabDeque.onTabClose, false);
+        gBrowser.tabContainer.removeEventListener("click", gTabDeque.onClick, false);
     },
 
     onTabOpen: function(anEvent) {
         // can't check whether tab is being opened in background - start at the
         // beginning and move to end of deque in onTabSelect if necessary
         gTabDeque.moveTabToDequeBeginning(anEvent.target);
-	    gBrowser.moveTabTo(anEvent.target, gBrowser.mCurrentTab.nextSibling._tPos);
+        gBrowser.moveTabTo(anEvent.target, gBrowser.mCurrentTab.nextSibling._tPos);
     },
 
     onTabSelect: function(anEvent) {
@@ -88,11 +88,11 @@ var gTabDeque = {
     // can't be sure that events are fired for all tabs on startup
     // tabs are missing if initialized too early, use this before first access
     ensureInitialization: function() {
-	    if (!gTabDeque.deque) {
+        if (!gTabDeque.deque) {
             gTabDeque.initDeque();
         }
         if (!gTabDeque.lastSelectedTab) {
-            gTabDeque.lastSelectedTab = gBrowser.mCurrentTab
+            gTabDeque.lastSelectedTab = gBrowser.mCurrentTab;
         }
     },
 
