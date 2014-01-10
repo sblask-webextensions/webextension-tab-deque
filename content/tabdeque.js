@@ -1,6 +1,10 @@
 var gTabDeque = {
 
     deque: undefined,
+    // apparently one can't listen to click on tab directly and listening on tab
+    // container fires the event after TabSelect, so we need this to figure out
+    // whether it was a click on the current tab
+    lastClickedTab: undefined,
 
     onLoad: function() {
 	    if ('undefined' == typeof gBrowser) {
@@ -8,16 +12,18 @@ var gTabDeque = {
 	    }
 	    window.removeEventListener('load', gTabDeque.onLoad, false);
 	    window.addEventListener('unload', gTabDeque.onUnload, false);
-	    gBrowser.tabContainer.addEventListener("TabClose", gTabDeque.onTabClose, false);
 	    gBrowser.tabContainer.addEventListener("TabOpen", gTabDeque.onTabOpen, false);
 	    gBrowser.tabContainer.addEventListener("TabSelect", gTabDeque.onTabSelect, false);
+	    gBrowser.tabContainer.addEventListener("TabClose", gTabDeque.onTabClose, false);
+	    gBrowser.tabContainer.addEventListener("click", gTabDeque.onClick, false);
     },
 
     onUnload: function() {
 	    window.removeEventListener('unload', gTabDeque.onUnload, false);
-	    gBrowser.tabContainer.removeEventListener("TabClose", gTabDeque.onTabClose, false);
 	    gBrowser.tabContainer.removeEventListener("TabOpen", gTabDeque.onTabOpen, false);
 	    gBrowser.tabContainer.removeEventListener("TabSelect", gTabDeque.onTabSelect, false);
+	    gBrowser.tabContainer.removeEventListener("TabClose", gTabDeque.onTabClose, false);
+	    gBrowser.tabContainer.removeEventListener("click", gTabDeque.onClick, false);
     },
 
     onTabOpen: function(anEvent) {
@@ -47,6 +53,14 @@ var gTabDeque = {
         }
     },
 
+    onClick: function(anEvent) {
+        var clickedTab = anEvent.target;
+        gTabDeque.ensureInitialization();
+        if (clickedTab == gTabDeque.lastClickedTab) {
+        }
+        gTabDeque.lastClickedTab = clickedTab
+    },
+
     moveTabToDequeBeginning: function(tab) {
         gTabDeque.ensureInitialization();
         // getting duplicates sometimes...
@@ -68,6 +82,9 @@ var gTabDeque = {
             return true;
         } else {
             return false;
+        }
+        if (!gTabDeque.lastClickedTab) {
+            gTabDeque.lastClickedTab = gBrowser.mCurrentTab
         }
     },
 
