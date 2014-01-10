@@ -1,10 +1,7 @@
 var gTabDeque = {
 
     deque: undefined,
-    // apparently one can't listen to click on tab directly and listening on tab
-    // container fires the event after TabSelect, so we need this to figure out
-    // whether it was a click on the current tab
-    lastSelectedTab: undefined,
+    selectionChanged: false,
 
     onLoad: function() {
         if ('undefined' == typeof gBrowser) {
@@ -12,18 +9,22 @@ var gTabDeque = {
         }
         window.removeEventListener('load', gTabDeque.onLoad, false);
         window.addEventListener('unload', gTabDeque.onUnload, false);
+        window.addEventListener("keyup", gTabDeque.onKeyUp, false);
         gBrowser.tabContainer.addEventListener("TabOpen", gTabDeque.onTabOpen, false);
         gBrowser.tabContainer.addEventListener("TabSelect", gTabDeque.onTabSelect, false);
         gBrowser.tabContainer.addEventListener("TabClose", gTabDeque.onTabClose, false);
         gBrowser.tabContainer.addEventListener("click", gTabDeque.onClick, false);
+        gBrowser.tabContainer.addEventListener("mouseup", gTabDeque.onMouseUp, false);
     },
 
     onUnload: function() {
         window.removeEventListener('unload', gTabDeque.onUnload, false);
+        window.removeEventListener("keyup", gTabDeque.onKeyUp, false);
         gBrowser.tabContainer.removeEventListener("TabOpen", gTabDeque.onTabOpen, false);
         gBrowser.tabContainer.removeEventListener("TabSelect", gTabDeque.onTabSelect, false);
         gBrowser.tabContainer.removeEventListener("TabClose", gTabDeque.onTabClose, false);
         gBrowser.tabContainer.removeEventListener("click", gTabDeque.onClick, false);
+        gBrowser.tabContainer.removeEventListener("mouseup", gTabDeque.onMouseUp, false);
     },
 
     onTabOpen: function(anEvent) {
@@ -35,6 +36,7 @@ var gTabDeque = {
 
     onTabSelect: function(anEvent) {
         gTabDeque.moveTabToDequeEnd(anEvent.target);
+        gTabDeque.selectionChanged = true;
     },
 
     onTabClose: function(anEvent) {
@@ -53,15 +55,20 @@ var gTabDeque = {
         }
     },
 
-    onClick: function(anEvent) {
-        var clickedTab = anEvent.target;
+    // can't differentiate between click on selected or unselected tab
+    // the relevant event order is (TabSelect ->) *Down -> *Up -> Click
+    // so these three functions are necessary to check whether selection changed
+    onMouseUp: function(anEvent) {
         gTabDeque.ensureInitialization();
-        if (clickedTab == gTabDeque.lastSelectedTab) {
-            var newlySelectedTab = gTabDeque.minimizeTab(clickedTab);
-            gTabDeque.lastSelectedTab = newlySelectedTab
-        } else {
-            gTabDeque.lastSelectedTab = clickedTab;
+        if (anEvent.target.nodeName == "tab" && anEvent.target.selected && !gTabDeque.selectionChanged) {
+            var newlySelectedTab = gTabDeque.minimizeTab(anEvent.target);
         }
+    },
+    onKeyUp: function(anEvent) {
+        gTabDeque.selectionChanged = false;
+    },
+    onClick: function(anEvent) {
+        gTabDeque.selectionChanged = false;
     },
 
     minimizeTab: function(tab) {
@@ -90,9 +97,7 @@ var gTabDeque = {
     ensureInitialization: function() {
         if (!gTabDeque.deque) {
             gTabDeque.initDeque();
-        }
-        if (!gTabDeque.lastSelectedTab) {
-            gTabDeque.lastSelectedTab = gBrowser.mCurrentTab;
+            gTabDeque.selectionChanged = false;
         }
     },
 
