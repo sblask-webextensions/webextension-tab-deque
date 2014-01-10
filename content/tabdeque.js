@@ -4,7 +4,7 @@ var gTabDeque = {
     // apparently one can't listen to click on tab directly and listening on tab
     // container fires the event after TabSelect, so we need this to figure out
     // whether it was a click on the current tab
-    lastClickedTab: undefined,
+    lastSelectedTab: undefined,
 
     onLoad: function() {
 	    if ('undefined' == typeof gBrowser) {
@@ -56,9 +56,19 @@ var gTabDeque = {
     onClick: function(anEvent) {
         var clickedTab = anEvent.target;
         gTabDeque.ensureInitialization();
-        if (clickedTab == gTabDeque.lastClickedTab) {
+        if (clickedTab == gTabDeque.lastSelectedTab) {
+            var newlySelectedTab = gTabDeque.minimizeTab(clickedTab);
+            gTabDeque.lastSelectedTab = newlySelectedTab
+        } else {
+            gTabDeque.lastSelectedTab = clickedTab;
         }
-        gTabDeque.lastClickedTab = clickedTab
+    },
+
+    minimizeTab: function(tab) {
+        gTabDeque.removeTabFromDeque(tab);
+        var nextTab = gTabDeque.getNextTab();
+        gBrowser.selectTabAtIndex(gTabDeque.getTabIndex(nextTab));
+        return nextTab;
     },
 
     moveTabToDequeBeginning: function(tab) {
@@ -75,16 +85,14 @@ var gTabDeque = {
         gTabDeque.deque.push(tab);
     },
 
+    // can't be sure that events are fired for all tabs on startup
     // tabs are missing if initialized too early, use this before first access
     ensureInitialization: function() {
 	    if (!gTabDeque.deque) {
             gTabDeque.initDeque();
-            return true;
-        } else {
-            return false;
         }
-        if (!gTabDeque.lastClickedTab) {
-            gTabDeque.lastClickedTab = gBrowser.mCurrentTab
+        if (!gTabDeque.lastSelectedTab) {
+            gTabDeque.lastSelectedTab = gBrowser.mCurrentTab
         }
     },
 
