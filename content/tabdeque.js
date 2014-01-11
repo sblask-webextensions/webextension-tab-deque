@@ -129,6 +129,17 @@ var gTabDeque = {
         }
     },
 
+    maximizeNextMinimizedTab: function() {    
+        for (var tabIndex = 0; tabIndex < gBrowser.tabs.length; tabIndex++) {
+            visibleTab = gBrowser.tabs[tabIndex];
+            if (visibleTab != gTabDeque.allTabsMinimizedMimic &&
+                gTabDeque.deque.indexOf(visibleTab) == -1) {
+                gBrowser.selectTabAtIndex(gTabDeque.getTabIndex(visibleTab));
+                return;
+            }
+        }
+    },
+
     openTab: function(anEvent) {
         var preferences = Components
             .classes['@mozilla.org/preferences-service;1']
