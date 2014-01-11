@@ -3,12 +3,14 @@ var gTabDeque = {
     deque: undefined,
     selectionChanged: false,
     mimickingAllTabMinimized: false,
+    allTabsMinimizedMimic: undefined,
 
     onLoad: function() {
         if ('undefined' == typeof gBrowser) {
             return;
         }
         window.removeEventListener('load', gTabDeque.onLoad, false);
+        window.addEventListener('close', gTabDeque.onClose, false);
         window.addEventListener('unload', gTabDeque.onUnload, false);
         window.addEventListener("keyup", gTabDeque.onKeyUp, false);
         // need to listen on window for mousegestures
@@ -18,8 +20,16 @@ var gTabDeque = {
         gBrowser.tabContainer.addEventListener("TabClose", gTabDeque.onTabClose, false);
     },
 
+    onClose: function() {
+        if (gTabDeque.allTabsMinimizedMimic) {
+            // we don't want this to be restored...
+            gBrowser.removeTab(gTabDeque.allTabsMinimizedMimic);
+        }
+    },
+
     onUnload: function() {
         window.removeEventListener('unload', gTabDeque.onUnload, false);
+        window.removeEventListener('close', gTabDeque.onClose, false);
         window.removeEventListener("keyup", gTabDeque.onKeyUp, false);
         window.removeEventListener("mouseup", gTabDeque.onMouseUp, false);
         gBrowser.tabContainer.removeEventListener("TabOpen", gTabDeque.onTabOpen, false);
@@ -28,18 +38,25 @@ var gTabDeque = {
     },
 
     onTabOpen: function(anEvent) {
-        // can't check whether tab is being opened in background - start at the
-        // beginning and move to end of deque in onTabSelect if necessary
-        var tab = anEvent.target;
-        gTabDeque.moveTabToDequeBeginning(tab);
         if (!gTabDeque.mimickingAllTabMinimized) {
+            var tab = anEvent.target;
+            // can't check whether tab is being opened in background - start at the
+            // beginning and move to end of deque in onTabSelect if necessary
+            gTabDeque.moveTabToDequeBeginning(tab);
             gBrowser.moveTabTo(tab, gBrowser.mCurrentTab.nextSibling._tPos);
         }
     },
 
     onTabSelect: function(anEvent) {
-        gTabDeque.moveTabToDequeEnd(anEvent.target);
         gTabDeque.selectionChanged = true;
+        if (!gTabDeque.mimickingAllTabMinimized) {
+            gTabDeque.moveTabToDequeEnd(anEvent.target);
+        }
+        if (anEvent.target === gTabDeque.allTabsMinimizedMimic) {
+            document.getElementById('nav-bar').collapsed = true;
+        } else {
+            document.getElementById('nav-bar').collapsed = false;
+        }
     },
 
     onTabClose: function(anEvent) {
@@ -81,7 +98,6 @@ var gTabDeque = {
 
     minimizeTab: function(tab) {
         gTabDeque.removeTabFromDeque(tab);
-        var tabToSelect = undefined;
         if (gTabDeque.deque.length == 0) {
             gTabDeque.mimicAllTabsMinimized();
         } else {
@@ -90,14 +106,23 @@ var gTabDeque = {
     },
 
     mimicAllTabsMinimized: function() {
-        var preferences = Components
-            .classes['@mozilla.org/preferences-service;1']
-            .getService(Components.interfaces.nsIPrefBranch);
-        var url = preferences.getCharPref("browser.newtab.url");
-        gTabDeque.mimickingAllTabMinimized = true;
-        var tab = gBrowser.loadOneTab(url, null, null, null, false, false);
-        gTabDeque.mimickingAllTabMinimized = false;
+        if (!gTabDeque.allTabsMinimizedMimic) {
+            gTabDeque.mimickingAllTabMinimized = true;
+            var preferences = Components
+                .classes['@mozilla.org/preferences-service;1']
+                .getService(Components.interfaces.nsIPrefBranch);
+            var url = preferences.getCharPref("browser.newtab.url");
+            gTabDeque.allTabsMinimizedMimic = gBrowser.loadOneTab(url, null, null, null, false, false);
+            gTabDeque.allTabsMinimizedMimic.collapsed = true;
+            gTabDeque.allTabsMinimizedMimic.disabled = true;
+            // TabSelect is triggered before gTabDeque.allTabsMinimizedMimic is set
+            document.getElementById('nav-bar').collapsed = true;
+            gTabDeque.mimickingAllTabMinimized = false;
+        } else {
+            gBrowser.selectTabAtIndex(gTabDeque.getTabIndex(gTabDeque.allTabsMinimizedMimic));
+        }
     },
+
     moveTabToDequeBeginning: function(tab) {
         gTabDeque.ensureInitialization();
         // getting duplicates sometimes...
