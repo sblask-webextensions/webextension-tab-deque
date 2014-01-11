@@ -49,7 +49,9 @@ var gTabDeque = {
 
     onTabSelect: function(anEvent) {
         gTabDeque.selectionChanged = true;
-        if (!gTabDeque.mimickingAllTabMinimized) {
+        // TabSelect is triggered when opening the mimic the first time and when
+        // closing the last not minimized tab, but we don't want to add it to the deque
+        if (!gTabDeque.mimickingAllTabMinimized && anEvent.target !== gTabDeque.allTabsMinimizedMimic) {
             gTabDeque.moveTabToDequeEnd(anEvent.target);
         }
         if (anEvent.target === gTabDeque.allTabsMinimizedMimic) {
@@ -63,7 +65,10 @@ var gTabDeque = {
         var closingTab = anEvent.target;
         gTabDeque.ensureInitialization();
         gTabDeque.removeTabFromDeque(closingTab);
-        if (gTabDeque.deque.length == 0) {
+        if (gTabDeque.deque.length == 0 && gBrowser.tabs.length <= 2) {
+            // there aren't any minimized tabs
+            gTabDeque.openTab();
+        } else if (gTabDeque.deque.length == 0) {
             gTabDeque.mimicAllTabsMinimized();
         } else {
             if (closingTab.selected) {
@@ -105,19 +110,23 @@ var gTabDeque = {
         }
     },
 
+    openTab: function(anEvent) {
+        var preferences = Components
+            .classes['@mozilla.org/preferences-service;1']
+            .getService(Components.interfaces.nsIPrefBranch);
+        var url = preferences.getCharPref("browser.newtab.url");
+        return gBrowser.loadOneTab(url, null, null, null, false, false);
+    },
+
     mimicAllTabsMinimized: function() {
         if (!gTabDeque.allTabsMinimizedMimic) {
             gTabDeque.mimickingAllTabMinimized = true;
-            var preferences = Components
-                .classes['@mozilla.org/preferences-service;1']
-                .getService(Components.interfaces.nsIPrefBranch);
-            var url = preferences.getCharPref("browser.newtab.url");
-            gTabDeque.allTabsMinimizedMimic = gBrowser.loadOneTab(url, null, null, null, false, false);
+            gTabDeque.allTabsMinimizedMimic = gTabDeque.openTab();
+            gTabDeque.mimickingAllTabMinimized = false;
             gTabDeque.allTabsMinimizedMimic.collapsed = true;
             gTabDeque.allTabsMinimizedMimic.disabled = true;
             // TabSelect is triggered before gTabDeque.allTabsMinimizedMimic is set
             document.getElementById('nav-bar').collapsed = true;
-            gTabDeque.mimickingAllTabMinimized = false;
         } else {
             gBrowser.selectTabAtIndex(gTabDeque.getTabIndex(gTabDeque.allTabsMinimizedMimic));
         }
