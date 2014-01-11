@@ -2,6 +2,7 @@ var gTabDeque = {
 
     deque: undefined,
     selectionChanged: false,
+    mimickingAllTabMinimized: false,
 
     onLoad: function() {
         if ('undefined' == typeof gBrowser) {
@@ -29,8 +30,11 @@ var gTabDeque = {
     onTabOpen: function(anEvent) {
         // can't check whether tab is being opened in background - start at the
         // beginning and move to end of deque in onTabSelect if necessary
-        gTabDeque.moveTabToDequeBeginning(anEvent.target);
-        gBrowser.moveTabTo(anEvent.target, gBrowser.mCurrentTab.nextSibling._tPos);
+        var tab = anEvent.target;
+        gTabDeque.moveTabToDequeBeginning(tab);
+        if (!gTabDeque.mimickingAllTabMinimized) {
+            gBrowser.moveTabTo(tab, gBrowser.mCurrentTab.nextSibling._tPos);
+        }
     },
 
     onTabSelect: function(anEvent) {
@@ -86,7 +90,13 @@ var gTabDeque = {
     },
 
     mimicAllTabsMinimized: function() {
-        document.getElementById("cmd_newNavigatorTab").doCommand();
+        var preferences = Components
+            .classes['@mozilla.org/preferences-service;1']
+            .getService(Components.interfaces.nsIPrefBranch);
+        var url = preferences.getCharPref("browser.newtab.url");
+        gTabDeque.mimickingAllTabMinimized = true;
+        var tab = gBrowser.loadOneTab(url, null, null, null, false, false);
+        gTabDeque.mimickingAllTabMinimized = false;
     },
     moveTabToDequeBeginning: function(tab) {
         gTabDeque.ensureInitialization();
