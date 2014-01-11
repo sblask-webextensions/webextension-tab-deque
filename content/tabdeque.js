@@ -1,7 +1,8 @@
 var gTabDeque = {
 
     deque: undefined,
-    selectionChanged: false,
+    currentlySelectedTab: undefined,
+
     mimickingAllTabMinimized: false,
     allTabsMinimizedMimic: undefined,
 
@@ -12,12 +13,12 @@ var gTabDeque = {
         window.removeEventListener('load', gTabDeque.onLoad, false);
         window.addEventListener('close', gTabDeque.onClose, false);
         window.addEventListener('unload', gTabDeque.onUnload, false);
-        window.addEventListener("keyup", gTabDeque.onKeyUp, false);
-        // need to listen on window for mousegestures
-        window.addEventListener("mouseup", gTabDeque.onMouseUp, false);
         gBrowser.tabContainer.addEventListener("TabOpen", gTabDeque.onTabOpen, false);
         gBrowser.tabContainer.addEventListener("TabSelect", gTabDeque.onTabSelect, false);
         gBrowser.tabContainer.addEventListener("TabClose", gTabDeque.onTabClose, false);
+
+        // TabSelect is not always called when tabs are being restored
+        gTabDeque.handleTabListeners(gBrowser.selectedTab);
     },
 
     onClose: function() {
@@ -30,17 +31,17 @@ var gTabDeque = {
     onUnload: function() {
         window.removeEventListener('unload', gTabDeque.onUnload, false);
         window.removeEventListener('close', gTabDeque.onClose, false);
-        window.removeEventListener("keyup", gTabDeque.onKeyUp, false);
-        window.removeEventListener("mouseup", gTabDeque.onMouseUp, false);
         gBrowser.tabContainer.removeEventListener("TabOpen", gTabDeque.onTabOpen, false);
         gBrowser.tabContainer.removeEventListener("TabSelect", gTabDeque.onTabSelect, false);
         gBrowser.tabContainer.removeEventListener("TabClose", gTabDeque.onTabClose, false);
+
+        gTabDeque.handleTabListeners(undefined);
     },
 
     onTabOpen: function(anEvent) {
         if (!gTabDeque.mimickingAllTabMinimized) {
             var tab = anEvent.target;
-            // can't check whether tab is being opened in background - start at the
+            // can't check whether tab is being opened in background - start at
             // beginning and move to end of deque in onTabSelect if necessary
             gTabDeque.moveTabToDequeBeginning(tab);
             gBrowser.moveTabTo(tab, gBrowser.mCurrentTab.nextSibling._tPos);
@@ -48,16 +49,49 @@ var gTabDeque = {
     },
 
     onTabSelect: function(anEvent) {
-        gTabDeque.selectionChanged = true;
-        // TabSelect is triggered when opening the mimic the first time and when
-        // closing the last not minimized tab, but we don't want to add it to the deque
-        if (!gTabDeque.mimickingAllTabMinimized && anEvent.target !== gTabDeque.allTabsMinimizedMimic) {
+        gTabDeque.handleTabListeners(anEvent.target)
+        // TabSelect is triggered when opening the mimic the first time and
+        // when closing the last not minimized tab, but we don't want to add it
+        // to the deque
+        if (!gTabDeque.mimickingAllTabMinimized &&
+            anEvent.target !== gTabDeque.allTabsMinimizedMimic) {
             gTabDeque.moveTabToDequeEnd(anEvent.target);
         }
         if (anEvent.target === gTabDeque.allTabsMinimizedMimic) {
             document.getElementById('nav-bar').collapsed = true;
         } else {
             document.getElementById('nav-bar').collapsed = false;
+        }
+    },
+
+    handleTabListeners: function(tab) {
+        if (gTabDeque.currentlySelectedTab) {
+            gTabDeque.currentlySelectedTab.removeEventListener("mousedown", gTabDeque.onSelectedTabMouseDown, false);
+            gTabDeque.currentlySelectedTab.removeEventListener("mouseup", gTabDeque.onSelectedTabMouseUp, false);
+        }
+        if (tab){
+            gTabDeque.currentlySelectedTab = tab
+            gTabDeque.currentlySelectedTab.hasMouseDown = false
+            // have to split this up, otherwise click would be triggered even
+            // on freshly selected tab
+            gTabDeque.currentlySelectedTab.addEventListener("mousedown", gTabDeque.onSelectedTabMouseDown, false);
+            gTabDeque.currentlySelectedTab.addEventListener("mouseup", gTabDeque.onSelectedTabMouseUp, false);
+        }
+    },
+
+    onSelectedTabMouseDown: function(anEvent) {
+        var tab = anEvent.target;
+        if (anEvent.button == 0) {
+            tab.hasMouseDown = true;
+        }
+    },
+
+    onSelectedTabMouseUp: function(anEvent) {
+        var tab = anEvent.target;
+        if (tab.hasMouseDown && anEvent.button == 0) {
+            gTabDeque.ensureInitialization();
+            gTabDeque.minimizeTab(anEvent.target);
+            tab.hasMouseDown = false;
         }
     },
 
@@ -82,23 +116,8 @@ var gTabDeque = {
         }
     },
 
-    // can't differentiate between click on selected or unselected tab
-    // so selectionChanged has to be checked to see whether selection changed
-    // the relevant event order is (TabSelect ->) *Down -> *Up -> Click
-    onMouseUp: function(anEvent) {
-        gTabDeque.ensureInitialization();
-        if (anEvent.button == 0 &&
-            anEvent.target.nodeName == "tab" &&
-            anEvent.target.selected &&
-            !gTabDeque.selectionChanged) {
-            gTabDeque.minimizeTab(anEvent.target);
-        }
-        // need this for selecting/closing with mouse: click/mousegesture
-        gTabDeque.selectionChanged = false;
-    },
-    onKeyUp: function(anEvent) {
-        // need this for selecting/closing with keyboard
-        gTabDeque.selectionChanged = false;
+    minimizeCurrentTab: function() {
+        gTabDeque.minimizeTab(gBrowser.selectedTab);
     },
 
     minimizeTab: function(tab) {
@@ -151,7 +170,6 @@ var gTabDeque = {
     ensureInitialization: function() {
         if (!gTabDeque.deque) {
             gTabDeque.initDeque();
-            gTabDeque.selectionChanged = false;
         }
     },
 
