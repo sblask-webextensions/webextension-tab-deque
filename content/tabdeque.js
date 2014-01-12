@@ -133,7 +133,8 @@ var gTabDeque = {
         for (var tabIndex = 0; tabIndex < gBrowser.tabs.length; tabIndex++) {
             visibleTab = gBrowser.tabs[tabIndex];
             if (visibleTab != gTabDeque.allTabsMinimizedMimic &&
-                gTabDeque.deque.indexOf(visibleTab) == -1) {
+                gTabDeque.deque.indexOf(visibleTab) == -1
+                ) {
                 gBrowser.selectTabAtIndex(gTabDeque.getTabIndex(visibleTab));
                 return;
             }
@@ -148,10 +149,26 @@ var gTabDeque = {
         return gBrowser.loadOneTab(url, null, null, null, false, false);
     },
 
+    letTabOpenLinksInNewTab: function(tab) {
+        var progressListener = {
+            // don't load anything in mimic, open new tab instead
+            onStateChange: function(aBrowser, aWebProgress, aRequest, aStateFlags, aStatus){
+                if (aStateFlags & Ci.nsIWebProgressListener.STATE_START &&
+                    aBrowser === gBrowser.getBrowserForTab(gTabDeque.allTabsMinimizedMimic)
+                    ) {
+                    aRequest.cancel(Components.results.NS_BINDING_ABORTED);
+                    gBrowser.loadOneTab(aRequest.name, null, null, null, false, false);
+                }
+            }
+        }
+        gBrowser.addTabsProgressListener(progressListener, Components.interfaces.nsIWebProgress.NOTIFY_STATE);
+    },
+
     mimicAllTabsMinimized: function() {
         if (!gTabDeque.allTabsMinimizedMimic) {
             gTabDeque.mimickingAllTabMinimized = true;
             gTabDeque.allTabsMinimizedMimic = gTabDeque.openTab();
+            gTabDeque.letTabOpenLinksInNewTab(gTabDeque.allTabsMinimizedMimic);
             gTabDeque.mimickingAllTabMinimized = false;
             gTabDeque.allTabsMinimizedMimic.collapsed = true;
             gTabDeque.allTabsMinimizedMimic.disabled = true;
