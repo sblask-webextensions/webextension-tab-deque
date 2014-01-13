@@ -22,8 +22,12 @@ var gTabDeque = {
     },
 
     onClose: function() {
+        // we don't want the mimic to be restored after restart...
         if (gTabDeque.allTabsMinimizedMimic) {
-            // we don't want this to be restored...
+            // we need at least one tab unminimized, otherwise the mimic would
+            // be restored right away
+            gTabDeque.maximizeNextMinimizedTab();
+            gBrowser.unpinTab(gTabDeque.allTabsMinimizedMimic);
             gBrowser.removeTab(gTabDeque.allTabsMinimizedMimic);
         }
     },
@@ -172,6 +176,7 @@ var gTabDeque = {
             gTabDeque.mimickingAllTabMinimized = false;
             gTabDeque.allTabsMinimizedMimic.collapsed = true;
             gTabDeque.allTabsMinimizedMimic.disabled = true;
+            gBrowser.pinTab(gTabDeque.allTabsMinimizedMimic);
             // TabSelect is triggered before gTabDeque.allTabsMinimizedMimic is set
             document.getElementById('nav-bar').collapsed = true;
         } else {
