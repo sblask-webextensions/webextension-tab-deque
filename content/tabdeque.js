@@ -155,13 +155,16 @@ var gTabDeque = {
 
     letTabOpenLinksInNewTab: function(tab) {
         var progressListener = {
-            // don't load anything in mimic, open new tab instead
             onStateChange: function(aBrowser, aWebProgress, aRequest, aStateFlags, aStatus){
-                if (aStateFlags & Ci.nsIWebProgressListener.STATE_START &&
-                    aBrowser === gBrowser.getBrowserForTab(gTabDeque.allTabsMinimizedMimic)
+                // abort at the very beginning
+                if (aStateFlags & Ci.nsIWebProgressListener.STATE_START) {
+                    // open links in new tab while allowing reload
+                    if (aBrowser === gBrowser.getBrowserForTab(tab) &&
+                        aRequest.originalURI.asciiSpec != gBrowser.getBrowserForTab(tab).currentURI.asciiSpec
                     ) {
-                    aRequest.cancel(Components.results.NS_BINDING_ABORTED);
-                    gBrowser.loadOneTab(aRequest.name, null, null, null, false, false);
+                        aRequest.cancel(Components.results.NS_BINDING_ABORTED);
+                        gBrowser.loadOneTab(aRequest.name, null, null, null, false, false);
+                    }
                 }
             }
         }
