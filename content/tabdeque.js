@@ -11,7 +11,7 @@ var gTabDeque = {
             return;
         }
         window.removeEventListener('load', gTabDeque.onLoad, false);
-        window.addEventListener('close', gTabDeque.onClose, false);
+        window.addEventListener('SSWindowClosing', gTabDeque.onClose, false);
         window.addEventListener('unload', gTabDeque.onUnload, false);
         gBrowser.tabContainer.addEventListener("TabOpen", gTabDeque.onTabOpen, false);
         gBrowser.tabContainer.addEventListener("TabSelect", gTabDeque.onTabSelect, false);
