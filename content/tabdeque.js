@@ -129,7 +129,8 @@ var gTabDeque = {
         if (gTabDeque.deque.length == 0) {
             gTabDeque.mimicAllTabsMinimized();
         } else {
-            gBrowser.selectTabAtIndex(gTabDeque.getTabIndex(gTabDeque.getNextTab()));
+            var nextTabIndex = gTabDeque.getTabIndex(gTabDeque.getNextTab());
+            gBrowser.selectTabAtIndex(nextTabIndex);
         }
     },
 
@@ -153,22 +154,32 @@ var gTabDeque = {
         return gBrowser.loadOneTab(url, null, null, null, false, false);
     },
 
+    abortNonReloads: function(aRequest, tabURI) {
+        if (aRequest.originalURI.asciiSpec != tabURI.asciiSpec) {
+            aRequest.cancel(Components.results.NS_BINDING_ABORTED);
+            gBrowser.loadOneTab(aRequest.name, null, null, null, false, false);
+        }
+    },
+
     letTabOpenLinksInNewTab: function(tab) {
         var progressListener = {
-            onStateChange: function(aBrowser, aWebProgress, aRequest, aStateFlags, aStatus){
+            onStateChange: function(
+                    aBrowser, aWebProgress, aRequest, aStateFlags, aStatus){
                 // abort at the very beginning
-                if (aStateFlags & Ci.nsIWebProgressListener.STATE_START) {
-                    // open links in new tab while allowing reload
-                    if (aBrowser === gBrowser.getBrowserForTab(tab) &&
-                        aRequest.originalURI.asciiSpec != gBrowser.getBrowserForTab(tab).currentURI.asciiSpec
+                if (aStateFlags & Ci.nsIWebProgressListener.STATE_START &&
+                    aBrowser === gBrowser.getBrowserForTab(tab)
                     ) {
-                        aRequest.cancel(Components.results.NS_BINDING_ABORTED);
-                        gBrowser.loadOneTab(aRequest.name, null, null, null, false, false);
-                    }
+                    var tabURI = gBrowser.getBrowserForTab(tab).currentURI;
+                    gTabDeque.abortNonReloads(aRequest, tabURI);
                 }
             }
         }
-        gBrowser.addTabsProgressListener(progressListener, Components.interfaces.nsIWebProgress.NOTIFY_STATE);
+        // don't listen on given tab's browser directly as then, the given
+        // request doesn't contain all necessary information
+        gBrowser.addTabsProgressListener(
+            progressListener,
+            Components.interfaces.nsIWebProgress.NOTIFY_STATE
+        );
     },
 
     mimicAllTabsMinimized: function() {
@@ -180,10 +191,11 @@ var gTabDeque = {
             gTabDeque.allTabsMinimizedMimic.collapsed = true;
             gTabDeque.allTabsMinimizedMimic.disabled = true;
             gBrowser.pinTab(gTabDeque.allTabsMinimizedMimic);
-            // TabSelect is triggered before gTabDeque.allTabsMinimizedMimic is set
             document.getElementById('nav-bar').collapsed = true;
         } else {
-            gBrowser.selectTabAtIndex(gTabDeque.getTabIndex(gTabDeque.allTabsMinimizedMimic));
+            var mimicIndex =
+                gTabDeque.getTabIndex(gTabDeque.allTabsMinimizedMimic);
+            gBrowser.selectTabAtIndex(mimicIndex);
         }
     },
 
