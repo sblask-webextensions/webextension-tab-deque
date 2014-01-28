@@ -10,7 +10,7 @@
         <em:homepageURL>https://github.com/sblask/firefox-tab-deque</em:homepageURL>
         <em:description>A firefox extension for better tab handling. Inspired by Opera 12.</em:description>
 
-        <em:iconURL>chrome://tabdeque/skin/tab-close.png</em:iconURL>
+        <em:iconURL>chrome://tabdeque/skin/tabdeque.png</em:iconURL>
 
         <em:targetApplication>
             <Description>
