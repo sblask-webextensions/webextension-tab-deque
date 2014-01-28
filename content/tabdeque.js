@@ -54,9 +54,8 @@ var gTabDeque = {
 
     onTabSelect: function(anEvent) {
         gTabDeque.handleTabListeners(anEvent.target)
-        // TabSelect is triggered when opening the mimic the first time and
-        // when closing the last not minimized tab, but we don't want to add it
-        // to the deque
+        // TabSelect is triggered on the mimic when minimizing or closing the
+        // last not minimized tab, but we don't want to add it to the deque
         if (!gTabDeque.mimickingAllTabMinimized &&
             anEvent.target !== gTabDeque.allTabsMinimizedMimic) {
             gTabDeque.moveTabToDequeEnd(anEvent.target);
@@ -76,8 +75,8 @@ var gTabDeque = {
         if (tab){
             gTabDeque.currentlySelectedTab = tab
             gTabDeque.currentlySelectedTab.hasMouseDown = false
-            // have to split this up, otherwise click would be triggered even
-            // on freshly selected tab
+            // have to use mouseup and mouseup instead of click as selecting a
+            // tab would minimize it again immediately otherwise
             gTabDeque.currentlySelectedTab.addEventListener("mousedown", gTabDeque.onSelectedTabMouseDown, false);
             gTabDeque.currentlySelectedTab.addEventListener("mouseup", gTabDeque.onSelectedTabMouseUp, false);
         }
@@ -103,20 +102,20 @@ var gTabDeque = {
         var closingTab = anEvent.target;
         gTabDeque.ensureInitialization();
         gTabDeque.removeTabFromDeque(closingTab);
+        // open a new tab if there aren't any minimized or other tabs
+        // show special tab if all tabs are minimized
+        // jump to next tab in deque if there are tabs that are no minimized
         if (gTabDeque.deque.length == 0 && gBrowser.tabs.length <= 2) {
-            // there aren't any minimized tabs
             gTabDeque.openTab();
         } else if (gTabDeque.deque.length == 0) {
             gTabDeque.mimicAllTabsMinimized();
-        } else {
-            if (closingTab.selected) {
-                var currentIndex = gTabDeque.getTabIndex(closingTab);
-                var nextIndex = gTabDeque.getTabIndex(gTabDeque.getNextTab());
-                // the closing tab is still there when calculating the index,
-                // but not when selecting
-                var adjustment = currentIndex < nextIndex ? -1 : 0;
-                gBrowser.selectTabAtIndex(nextIndex + adjustment);
-            }
+        } else if (closingTab.selected) {
+            var currentIndex = gTabDeque.getTabIndex(closingTab);
+            var nextIndex = gTabDeque.getTabIndex(gTabDeque.getNextTab());
+            // the closing tab is still there when calculating the index,
+            // but not when selecting, so need adjustment
+            var adjustment = currentIndex < nextIndex ? -1 : 0;
+            gBrowser.selectTabAtIndex(nextIndex + adjustment);
         }
     },
 
@@ -125,6 +124,7 @@ var gTabDeque = {
     },
 
     minimizeTab: function(tab) {
+        gTabDeque.ensureInitialization();
         gTabDeque.removeTabFromDeque(tab);
         if (gTabDeque.deque.length == 0) {
             gTabDeque.mimicAllTabsMinimized();
@@ -154,31 +154,45 @@ var gTabDeque = {
         return gBrowser.loadOneTab(url, null, null, null, false, false);
     },
 
-    abortNonReloads: function(aRequest, tabURI) {
-        if (aRequest.originalURI.asciiSpec != tabURI.asciiSpec) {
-            aRequest.cancel(Components.results.NS_BINDING_ABORTED);
-            gBrowser.loadOneTab(aRequest.name, null, null, null, false, false);
+    progressListener: function(browser) {
+        return { 
+            QueryInterface: XPCOMUtils.generateQI([
+                "nsIWebProgressListener",
+                "nsISupportsWeakReference"
+            ]),
+
+            onStateChange: function(
+                    aWebProgress, aRequest, aStateFlags, aStatus){
+                // abort at the very beginning if at all
+                if (aStateFlags & Ci.nsIWebProgressListener.STATE_START) {
+                    // originalURI is not consistently available
+                    if (!aRequest.originalURI) {
+                        aRequest.QueryInterface(
+                            Components.interfaces.nsIChannel);
+                    }
+                    var currentURI = browser.currentURI.asciiSpec;
+                    var requestedURI = aRequest.originalURI.asciiSpec;
+                    // ignore reloads
+                    if (currentURI == requestedURI) {
+                        return;
+                    }
+                    // redirect request into new tab
+                    aRequest.cancel(Components.results.NS_BINDING_ABORTED);
+                    gBrowser.loadOneTab(
+                        aRequest.name, null, null, null, false, false);
+                }
+            }
         }
     },
 
     letTabOpenLinksInNewTab: function(tab) {
-        var progressListener = {
-            onStateChange: function(
-                    aBrowser, aWebProgress, aRequest, aStateFlags, aStatus){
-                // abort at the very beginning
-                if (aStateFlags & Ci.nsIWebProgressListener.STATE_START &&
-                    aBrowser === gBrowser.getBrowserForTab(tab)
-                    ) {
-                    var tabURI = gBrowser.getBrowserForTab(tab).currentURI;
-                    gTabDeque.abortNonReloads(aRequest, tabURI);
-                }
-            }
-        }
-        // don't listen on given tab's browser directly as then, the given
-        // request doesn't contain all necessary information
-        gBrowser.addTabsProgressListener(
-            progressListener,
-            Components.interfaces.nsIWebProgress.NOTIFY_STATE
+        var browser = gBrowser.getBrowserForTab(tab);
+        var listener = gTabDeque.progressListener(browser);
+        // keep reference, listener seems to be garbage collected otherwise
+        gTabDeque.progressListenerInstance = listener;
+        browser.addProgressListener(
+            listener,
+            Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT
         );
     },
 
