@@ -1,161 +1,185 @@
-var gTabDeque = {
+Components.utils.import("resource://gre/modules/devtools/Console.jsm");
 
-    deque: undefined,
-    currentlySelectedTab: undefined,
+EXPORTED_SYMBOLS = ["TabDeque"];
 
-    mimickingAllTabMinimized: false,
-    allTabsMinimizedMimic: undefined,
+function TabDeque() {
+    this.deque = undefined;
+    this.currentlySelectedTab = undefined;
 
-    onLoad: function() {
-        if ('undefined' == typeof gBrowser) {
+    this.mimickingAllTabMinimized = false;
+    this.allTabsMinimizedMimic = undefined;
+
+    this.initialize = function(domWindow) {
+        if (!domWindow ||
+            !domWindow.gBrowser ||
+            !domWindow.gBrowser.tabContainer) {
             return;
         }
-        window.removeEventListener('load', gTabDeque.onLoad, false);
-        window.addEventListener('SSWindowClosing', gTabDeque.onClose, false);
-        window.addEventListener('unload', gTabDeque.onUnload, false);
-        gBrowser.tabContainer.addEventListener("TabOpen", gTabDeque.onTabOpen, false);
-        gBrowser.tabContainer.addEventListener("TabSelect", gTabDeque.onTabSelect, false);
-        gBrowser.tabContainer.addEventListener("TabClose", gTabDeque.onTabClose, false);
+        this.domWindow = domWindow;
+        this.gBrowser = domWindow.gBrowser;
+        this.tabContainer = domWindow.gBrowser.tabContainer;
+
+        this.domWindow.addEventListener('SSWindowClosing', this.onClose, false);
+        this.tabContainer.addEventListener("TabOpen", this.onTabOpen, false);
+        this.tabContainer.addEventListener("TabSelect", this.onTabSelect, false);
+        this.tabContainer.addEventListener("TabClose", this.onTabClose, false);
 
         // TabSelect is not always called when tabs are being restored
-        gTabDeque.handleTabListeners(gBrowser.selectedTab);
-    },
+        this.handleTabListeners(this.gBrowser.selectedTab);
+    }
 
-    onClose: function() {
+    this.destroyMimic = function() {
         // we don't want the mimic to be restored after restart...
-        if (gTabDeque.allTabsMinimizedMimic) {
+        if (this.allTabsMinimizedMimic) {
             // we need at least one tab unminimized, otherwise the mimic would
             // be restored right away
-            gTabDeque.maximizeNextMinimizedTab();
-            gBrowser.unpinTab(gTabDeque.allTabsMinimizedMimic);
-            gBrowser.removeTab(gTabDeque.allTabsMinimizedMimic);
+            this.maximizeNextMinimizedTab();
+            this.gBrowser.unpinTab(this.allTabsMinimizedMimic);
+            this.gBrowser.removeTab(this.allTabsMinimizedMimic);
         }
-    },
+    }
 
-    onUnload: function() {
-        window.removeEventListener('unload', gTabDeque.onUnload, false);
-        window.removeEventListener('close', gTabDeque.onClose, false);
-        gBrowser.tabContainer.removeEventListener("TabOpen", gTabDeque.onTabOpen, false);
-        gBrowser.tabContainer.removeEventListener("TabSelect", gTabDeque.onTabSelect, false);
-        gBrowser.tabContainer.removeEventListener("TabClose", gTabDeque.onTabClose, false);
+    this.onClose = function() {
+        this.destroyMimic()
+    }.bind(this)
 
-        gTabDeque.handleTabListeners(undefined);
-    },
+    this.destroy = function() {
+        if (!this.domWindow ||
+            !this.domWindow.gBrowser ||
+            !this.domWindow.gBrowser.tabContainer) {
+            return;
+        }
+        this.domWindow.removeEventListener('SSWindowClosing', this.onClose, false);
+        this.tabContainer.removeEventListener("TabOpen", this.onTabOpen, false);
+        this.tabContainer.removeEventListener("TabSelect", this.onTabSelect, false);
+        this.tabContainer.removeEventListener("TabClose", this.onTabClose, false);
 
-    onTabOpen: function(anEvent) {
-        if (!gTabDeque.mimickingAllTabMinimized) {
+        this.handleTabListeners(undefined);
+
+        this.destroyMimic();
+    }
+
+    this.onTabOpen = function(anEvent) {
+        if (!this.mimickingAllTabMinimized) {
             var tab = anEvent.target;
             // can't check whether tab is being opened in background - start at
             // beginning and move to end of deque in onTabSelect if necessary
-            gTabDeque.moveTabToDequeBeginning(tab);
-            gBrowser.moveTabTo(tab, gBrowser.mCurrentTab.nextSibling._tPos);
+            this.moveTabToDequeBeginning(tab);
+            this.gBrowser.moveTabTo(tab, this.gBrowser.mCurrentTab.nextSibling._tPos);
         }
-    },
+    }.bind(this)
 
-    onTabSelect: function(anEvent) {
-        gTabDeque.handleTabListeners(anEvent.target)
+    this.onTabSelect = function(anEvent) {
+        this.handleTabListeners(anEvent.target)
         // TabSelect is triggered on the mimic when minimizing or closing the
         // last not minimized tab, but we don't want to add it to the deque
-        if (!gTabDeque.mimickingAllTabMinimized &&
-            anEvent.target !== gTabDeque.allTabsMinimizedMimic) {
-            gTabDeque.moveTabToDequeEnd(anEvent.target);
+        if (!this.mimickingAllTabMinimized &&
+            anEvent.target !== this.allTabsMinimizedMimic) {
+            this.moveTabToDequeEnd(anEvent.target);
         }
-        if (anEvent.target === gTabDeque.allTabsMinimizedMimic) {
-            document.getElementById('nav-bar').collapsed = true;
+        if (anEvent.target === this.allTabsMinimizedMimic) {
+            this.domWindow.document.getElementById('nav-bar').collapsed = true;
         } else {
-            document.getElementById('nav-bar').collapsed = false;
+            this.domWindow.document.getElementById('nav-bar').collapsed = false;
         }
-    },
+    }.bind(this)
 
-    handleTabListeners: function(tab) {
-        if (gTabDeque.currentlySelectedTab) {
-            gTabDeque.currentlySelectedTab.removeEventListener("mousedown", gTabDeque.onSelectedTabMouseDown, false);
-            gTabDeque.currentlySelectedTab.removeEventListener("mouseup", gTabDeque.onSelectedTabMouseUp, false);
+    this.handleTabListeners = function(tab) {
+        if (this.currentlySelectedTab) {
+            this.currentlySelectedTab.removeEventListener("mousedown", this.onSelectedTabMouseDown, false);
+            this.currentlySelectedTab.removeEventListener("mouseup", this.onSelectedTabMouseUp, false);
         }
         if (tab){
-            gTabDeque.currentlySelectedTab = tab
-            gTabDeque.currentlySelectedTab.hasMouseDown = false
+            this.currentlySelectedTab = tab
+            this.currentlySelectedTab.hasMouseDown = false
             // have to use mouseup and mouseup instead of click as selecting a
             // tab would minimize it again immediately otherwise
-            gTabDeque.currentlySelectedTab.addEventListener("mousedown", gTabDeque.onSelectedTabMouseDown, false);
-            gTabDeque.currentlySelectedTab.addEventListener("mouseup", gTabDeque.onSelectedTabMouseUp, false);
+            this.currentlySelectedTab.addEventListener("mousedown", this.onSelectedTabMouseDown, false);
+            this.currentlySelectedTab.addEventListener("mouseup", this.onSelectedTabMouseUp, false);
         }
-    },
+    }
 
-    onSelectedTabMouseDown: function(anEvent) {
+    this.onSelectedTabMouseDown = function(anEvent) {
         var tab = anEvent.target;
         if (anEvent.button == 0) {
             tab.hasMouseDown = true;
         }
-    },
+    }.bind(this)
 
-    onSelectedTabMouseUp: function(anEvent) {
+    this.onSelectedTabMouseUp = function(anEvent) {
         var tab = anEvent.target;
         if (tab.hasMouseDown && anEvent.button == 0) {
-            gTabDeque.ensureInitialization();
-            gTabDeque.minimizeTab(anEvent.target);
+            this.ensureInitialization();
+            this.minimizeTab(anEvent.target);
             tab.hasMouseDown = false;
         }
-    },
+    }.bind(this)
 
-    onTabClose: function(anEvent) {
+    this.onTabClose = function(anEvent) {
         var closingTab = anEvent.target;
-        gTabDeque.ensureInitialization();
-        gTabDeque.removeTabFromDeque(closingTab);
+        this.ensureInitialization();
+        this.removeTabFromDeque(closingTab);
         // open a new tab if there aren't any minimized or other tabs
         // show special tab if all tabs are minimized
         // jump to next tab in deque if there are tabs that are no minimized
-        if (gTabDeque.deque.length == 0 && gBrowser.tabs.length <= 2) {
-            gTabDeque.openTab();
-        } else if (gTabDeque.deque.length == 0) {
-            gTabDeque.mimicAllTabsMinimized();
+        var openTabCount = this.allTabsMinimizedMimic ? -1 : 0
+        openTabCount += this.gBrowser.tabs.length;
+        var allTabsMinimized = this.deque.length == 0;
+        if (openTabCount <= 1) {
+            this.openTab();
+        } else if (allTabsMinimized) {
+            this.mimicAllTabsMinimized();
         } else if (closingTab.selected) {
-            var currentIndex = gTabDeque.getTabIndex(closingTab);
-            var nextIndex = gTabDeque.getTabIndex(gTabDeque.getNextTab());
+            var currentIndex = this.getTabIndex(closingTab);
+            var nextIndex = this.getTabIndex(this.getNextTab());
             // the closing tab is still there when calculating the index,
             // but not when selecting, so need adjustment
             var adjustment = currentIndex < nextIndex ? -1 : 0;
-            gBrowser.selectTabAtIndex(nextIndex + adjustment);
+            this.gBrowser.selectTabAtIndex(nextIndex + adjustment);
         }
-    },
+    }.bind(this)
 
-    minimizeCurrentTab: function() {
-        gTabDeque.minimizeTab(gBrowser.selectedTab);
-    },
+    this.minimizeCurrentTab = function() {
+        this.minimizeTab(this.gBrowser.selectedTab);
+    }
 
-    minimizeTab: function(tab) {
-        gTabDeque.ensureInitialization();
-        gTabDeque.removeTabFromDeque(tab);
-        if (gTabDeque.deque.length == 0) {
-            gTabDeque.mimicAllTabsMinimized();
+    this.minimizeTab = function(tab) {
+        this.ensureInitialization();
+        this.removeTabFromDeque(tab);
+        if (this.deque.length == 0) {
+            this.mimicAllTabsMinimized();
         } else {
-            var nextTabIndex = gTabDeque.getTabIndex(gTabDeque.getNextTab());
-            gBrowser.selectTabAtIndex(nextTabIndex);
+            var nextTabIndex = this.getTabIndex(this.getNextTab());
+            this.gBrowser.selectTabAtIndex(nextTabIndex);
         }
-    },
+    }
 
-    maximizeNextMinimizedTab: function() {    
-        for (var tabIndex = 0; tabIndex < gBrowser.tabs.length; tabIndex++) {
-            visibleTab = gBrowser.tabs[tabIndex];
-            if (visibleTab != gTabDeque.allTabsMinimizedMimic &&
-                gTabDeque.deque.indexOf(visibleTab) == -1
+    this.maximizeNextMinimizedTab = function() {
+        var tabs = this.gBrowser;
+        for (var tabIndex = 0; tabIndex < tabs.length; tabIndex++) {
+            var maybeMinimizedTab = tabs[tabIndex];
+            if (maybeMinimizedTab != this.allTabsMinimizedMimic &&
+                this.deque.indexOf(maybeMinimizedTab) == -1
                 ) {
-                gBrowser.selectTabAtIndex(gTabDeque.getTabIndex(visibleTab));
+                var minimizedTabIndex = this.getTabIndex(visibleTab);
+                this.gBrowser.selectTabAtIndex(minimizedTabIndex);
                 return;
             }
         }
-    },
+    }
 
-    openTab: function(anEvent) {
+    this.openTab = function(anEvent) {
         var preferences = Components
             .classes['@mozilla.org/preferences-service;1']
             .getService(Components.interfaces.nsIPrefBranch);
         var url = preferences.getCharPref("browser.newtab.url");
-        return gBrowser.loadOneTab(url, null, null, null, false, false);
-    },
+        return this.gBrowser.loadOneTab(url, {inBackground: false});
+    }
 
-    progressListener: function(browser) {
-        return { 
+    this.progressListener = function(browser) {
+        Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
+        const START = Components.interfaces.nsIWebProgressListener.STATE_START;
+        return {
             QueryInterface: XPCOMUtils.generateQI([
                 "nsIWebProgressListener",
                 "nsISupportsWeakReference"
@@ -164,7 +188,7 @@ var gTabDeque = {
             onStateChange: function(
                     aWebProgress, aRequest, aStateFlags, aStatus){
                 // abort at the very beginning if at all
-                if (aStateFlags & Ci.nsIWebProgressListener.STATE_START) {
+                if (aStateFlags & START) {
                     // originalURI is not consistently available
                     if (!aRequest.originalURI) {
                         aRequest.QueryInterface(
@@ -178,106 +202,106 @@ var gTabDeque = {
                     }
                     // redirect request into new tab
                     aRequest.cancel(Components.results.NS_BINDING_ABORTED);
-                    gBrowser.loadOneTab(
+                    this.gBrowser.loadOneTab(
                         aRequest.name, null, null, null, false, false);
                 }
-            }
+            }.bind(this)
         }
-    },
+    }
 
-    letTabOpenLinksInNewTab: function(tab) {
-        var browser = gBrowser.getBrowserForTab(tab);
-        var listener = gTabDeque.progressListener(browser);
+    this.letTabOpenLinksInNewTab = function(tab) {
+        var browser = this.gBrowser.getBrowserForTab(tab);
+        var listener = this.progressListener(browser);
         // keep reference, listener seems to be garbage collected otherwise
-        gTabDeque.progressListenerInstance = listener;
+        this.progressListenerInstance = listener;
         browser.addProgressListener(
             listener,
             Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT
         );
-    },
+    }
 
-    mimicAllTabsMinimized: function() {
-        if (!gTabDeque.allTabsMinimizedMimic) {
-            gTabDeque.mimickingAllTabMinimized = true;
-            gTabDeque.allTabsMinimizedMimic = gTabDeque.openTab();
-            gTabDeque.letTabOpenLinksInNewTab(gTabDeque.allTabsMinimizedMimic);
-            gTabDeque.mimickingAllTabMinimized = false;
-            gTabDeque.allTabsMinimizedMimic.collapsed = true;
-            gTabDeque.allTabsMinimizedMimic.disabled = true;
-            gBrowser.pinTab(gTabDeque.allTabsMinimizedMimic);
-            document.getElementById('nav-bar').collapsed = true;
+    this.mimicAllTabsMinimized = function() {
+        if (!this.allTabsMinimizedMimic) {
+            this.mimickingAllTabMinimized = true;
+            this.allTabsMinimizedMimic = this.openTab();
+            this.letTabOpenLinksInNewTab(this.allTabsMinimizedMimic);
+            this.mimickingAllTabMinimized = false;
+            this.allTabsMinimizedMimic.collapsed = true;
+            this.allTabsMinimizedMimic.disabled = true;
+            this.gBrowser.pinTab(this.allTabsMinimizedMimic);
+            this.domWindow.document.getElementById('nav-bar').collapsed = true;
         } else {
             var mimicIndex =
-                gTabDeque.getTabIndex(gTabDeque.allTabsMinimizedMimic);
-            gBrowser.selectTabAtIndex(mimicIndex);
+                this.getTabIndex(this.allTabsMinimizedMimic);
+            this.gBrowser.selectTabAtIndex(mimicIndex);
         }
-    },
+    }
 
-    moveTabToDequeBeginning: function(tab) {
-        gTabDeque.ensureInitialization();
+    this.moveTabToDequeBeginning = function(tab) {
+        this.ensureInitialization();
         // getting duplicates sometimes...
-        gTabDeque.removeTabFromDeque(tab);
-        gTabDeque.deque.unshift(tab);
-    },
+        this.removeTabFromDeque(tab);
+        this.deque.unshift(tab);
+    }
 
-    moveTabToDequeEnd: function(tab) {
-        gTabDeque.ensureInitialization();
+    this.moveTabToDequeEnd = function(tab) {
+        this.ensureInitialization();
         // getting duplicates sometimes...
-        gTabDeque.removeTabFromDeque(tab);
-        gTabDeque.deque.push(tab);
-    },
+        this.removeTabFromDeque(tab);
+        this.deque.push(tab);
+    }
 
     // can't be sure that events are fired for all tabs on startup
     // tabs are missing if initialized too early, use this before first access
-    ensureInitialization: function() {
-        if (!gTabDeque.deque) {
-            gTabDeque.initDeque();
+    this.ensureInitialization = function() {
+        if (!this.deque) {
+            this.initDeque();
         }
-    },
+    }
 
-    initDeque: function() {
-        gTabDeque.deque = new Array();
-        for (var tabIndex = 0; tabIndex < gBrowser.tabs.length; tabIndex++) {
-            gTabDeque.deque.push(gBrowser.tabs[tabIndex]);
+    this.initDeque = function() {
+        this.deque = new Array();
+        var tabs = this.gBrowser.tabs;
+        for (var tabIndex = 0; tabIndex < tabs.length; tabIndex++) {
+            this.deque.push(tabs[tabIndex]);
         }
-        return gTabDeque.deque;
-    },
+        return this.deque;
+    }
 
-    removeTabFromDeque: function(tab) {
-        var dequeIndex = gTabDeque.deque.indexOf(tab)
-        if (gTabDeque.deque.indexOf(tab) >= 0) {
-            gTabDeque.deque.splice(gTabDeque.deque.indexOf(tab), 1);
+    this.removeTabFromDeque = function(tab) {
+        var dequeIndex = this.deque.indexOf(tab)
+        if (this.deque.indexOf(tab) >= 0) {
+            this.deque.splice(this.deque.indexOf(tab), 1);
         }
-    },
+    }
 
-    getTabIndex: function(givenTab) {
-        for (var tabIndex = 0; tabIndex < gBrowser.tabs.length; tabIndex++) {
-            if (gBrowser.tabs[tabIndex] === givenTab) {
+    this.getTabIndex = function(givenTab) {
+        var tabs = this.gBrowser.tabs;
+        for (var tabIndex = 0; tabIndex < tabs.length; tabIndex++) {
+            if (tabs[tabIndex] === givenTab) {
                 return tabIndex;
             }
         }
         return -1;
-    },
+    }
 
-    getNextTab: function() {
-        return gTabDeque.deque[gTabDeque.deque.length - 1];
-    },
+    this.getNextTab = function() {
+        return this.deque[this.deque.length - 1];
+    }
 
     // for debugging
-    getDequeURLs: function() {
+    this.getDequeURLs = function() {
         var urls = new Array();
-        var length = gTabDeque.deque.length
-        for (var tabIndex = 0; tabIndex < gTabDeque.deque.length; tabIndex++) {
-            urls.push(gTabDeque.getTabURL(gTabDeque.deque[tabIndex]));
+        var length = this.deque.length
+        for (var tabIndex = 0; tabIndex < this.deque.length; tabIndex++) {
+            urls.push(this.getTabURL(this.deque[tabIndex]));
         }
         return urls;
-    },
+    }
 
-    getTabURL: function(tab) {
-        var browser = gBrowser.getBrowserForTab(tab);
+    this.getTabURL = function(tab) {
+        var browser = this.gBrowser.getBrowserForTab(tab);
         return browser.currentURI.spec;
     }
 };
-
-window.addEventListener('load', gTabDeque.onLoad, false);
 

@@ -3,7 +3,8 @@ Components.utils.import("resource://gre/modules/devtools/Console.jsm");
 
 var initFunction = function(domWindow) {
     var extensionResource = "chrome://tabdeque/content/tabdeque.jsm";
-    Components.utils.import(extensionResource, domWindow);
+    Components.utils.import(extensionResource);
+    domWindow.gTabDeque = new TabDeque();
     domWindow.gTabDeque.initialize(domWindow);
 }
 
