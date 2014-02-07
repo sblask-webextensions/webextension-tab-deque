@@ -9,6 +9,53 @@ function TabDeque() {
     this.mimickingAllTabMinimized = false;
     this.allTabsMinimizedMimic = undefined;
 
+    this.keyset = undefined;
+
+    this.makeKeyset = function() {
+        var namespace =
+            "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
+        this.keyset =
+            this.domWindow.document.createElementNS(namespace, "keyset");
+        this.keyset.setAttribute("id", "tabdequeKeyset");
+        var mainKeyset = this.domWindow.document.getElementById("mainKeyset");
+        mainKeyset.parentNode.appendChild(this.keyset)
+    }
+
+    this.removeKeyboardShortcuts = function() {
+        if (this.keyset) {
+            this.keyset.parentNode.removeChild(this.keyset);
+            this.keyset = undefined;
+        }
+    }
+
+    this.makeKeyboardShortcutElement = function(id, keycode, modifiers, fun) {
+        var element = this.domWindow.document.createElement("key");
+        element.setAttribute("id", id);
+        element.setAttribute("keycode", keycode);
+        element.setAttribute("modifiers", modifiers);
+        element.setAttribute("oncommand", "void(0);");
+        element.addEventListener("command", fun, true);
+        return element;
+    }
+
+    this.addKeyboardShortcuts = function() {
+        this.makeKeyset();
+        var minimizeElement = this.makeKeyboardShortcutElement(
+            "tabdeque-minimize-current-tab",
+            "VK_PAGE_DOWN",
+            "shift",
+            this.minimizeCurrentTab.bind(this)
+        );
+        this.keyset.appendChild(minimizeElement);
+        var maximizeElement = this.makeKeyboardShortcutElement(
+            "tabdeque-maximize-next-minimized-tab",
+            "VK_PAGE_UP",
+            "shift",
+            this.maximizeNextMinimizedTab.bind(this)
+        );
+        this.keyset.appendChild(maximizeElement);
+    }
+
     this.initialize = function(domWindow) {
         if (!domWindow ||
             !domWindow.gBrowser ||
@@ -26,6 +73,8 @@ function TabDeque() {
 
         // TabSelect is not always called when tabs are being restored
         this.handleTabListeners(this.gBrowser.selectedTab);
+
+        this.addKeyboardShortcuts();
     }
 
     this.destroyMimic = function() {
@@ -49,6 +98,9 @@ function TabDeque() {
             !this.domWindow.gBrowser.tabContainer) {
             return;
         }
+
+        this.removeKeyboardShortcuts();
+
         this.domWindow.removeEventListener('SSWindowClosing', this.onClose, false);
         this.tabContainer.removeEventListener("TabOpen", this.onTabOpen, false);
         this.tabContainer.removeEventListener("TabSelect", this.onTabSelect, false);
@@ -155,13 +207,13 @@ function TabDeque() {
     }
 
     this.maximizeNextMinimizedTab = function() {
-        var tabs = this.gBrowser;
+        var tabs = this.gBrowser.tabs;
         for (var tabIndex = 0; tabIndex < tabs.length; tabIndex++) {
             var maybeMinimizedTab = tabs[tabIndex];
             if (maybeMinimizedTab != this.allTabsMinimizedMimic &&
                 this.deque.indexOf(maybeMinimizedTab) == -1
                 ) {
-                var minimizedTabIndex = this.getTabIndex(visibleTab);
+                var minimizedTabIndex = this.getTabIndex(maybeMinimizedTab);
                 this.gBrowser.selectTabAtIndex(minimizedTabIndex);
                 return;
             }
