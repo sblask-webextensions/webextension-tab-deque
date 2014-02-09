@@ -1,9 +1,0 @@
-<?xml version='1.0'?>
-<!DOCTYPE overlay SYSTEM "chrome://tabdeque/locale/overlay.dtd">
-<overlay xmlns='http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul'>
-    <keyset id="mainKeyset">
-        <key id="tabdeque-minimize-current-tab" keycode="VK_PAGE_DOWN" modifiers="shift" oncommand="gTabDeque.minimizeCurrentTab()"/>
-        <key id="tabdeque-maximize-next-minimized-tab" keycode="VK_PAGE_UP" modifiers="shift" oncommand="gTabDeque.maximizeNextMinimizedTab()"/>
-    </keyset>
-    <script type='application/x-javascript' src='chrome://tabdeque/content/tabdeque.js'></script>
-</overlay>
