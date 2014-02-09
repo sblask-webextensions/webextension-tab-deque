@@ -152,9 +152,11 @@ function TabDeque() {
     }
 
     this.onSelectedTabMouseDown = function(anEvent) {
-        var tab = anEvent.target;
-        if (anEvent.button == 0) {
-            tab.hasMouseDown = true;
+        if (anEvent.originalTarget.className != 'tab-close-button') {
+            var tab = anEvent.target;
+            if (anEvent.button == 0) {
+                tab.hasMouseDown = true;
+            }
         }
     }.bind(this)
 
