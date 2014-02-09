@@ -66,6 +66,7 @@ function TabDeque() {
         this.gBrowser = domWindow.gBrowser;
         this.tabContainer = domWindow.gBrowser.tabContainer;
 
+        // we don't want the mimic to be restored after restart...
         this.domWindow.addEventListener('SSWindowClosing', this.onClose, false);
         this.tabContainer.addEventListener("TabOpen", this.onTabOpen, false);
         this.tabContainer.addEventListener("TabSelect", this.onTabSelect, false);
@@ -78,13 +79,14 @@ function TabDeque() {
     }
 
     this.destroyMimic = function() {
-        // we don't want the mimic to be restored after restart...
         if (this.allTabsMinimizedMimic) {
-            // we need at least one tab unminimized, otherwise the mimic would
-            // be restored right away
+            // we need at least one tab unminimized and allTabsMinimizedMimic
+            // undefined, otherwise the mimic would be recreated right away
             this.maximizeNextMinimizedTab();
-            this.gBrowser.unpinTab(this.allTabsMinimizedMimic);
-            this.gBrowser.removeTab(this.allTabsMinimizedMimic);
+            var mimic = this.allTabsMinimizedMimic;
+            this.allTabsMinimizedMimic = undefined;
+            this.gBrowser.unpinTab(mimic);
+            this.gBrowser.removeTab(mimic);
         }
     }
 
