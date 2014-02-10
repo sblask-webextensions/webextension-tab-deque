@@ -6,12 +6,12 @@ var initFunction = function(domWindow) {
     Components.utils.import(extensionResource);
     domWindow.gTabDeque = new TabDeque();
     domWindow.gTabDeque.initialize(domWindow);
-}
+};
 
 var destroyFunction = function(domWindow) {
     domWindow.gTabDeque.destroy();
     domWindow.gTabDeque = undefined;
-}
+};
 
 function simpleToDomWindow(aWindow) {
     return aWindow.QueryInterface(Components.interfaces.nsIDOMWindow);
@@ -30,12 +30,12 @@ var windowListener = {
         var onLoadFunction = function() {
             domWindow.removeEventListener("load", arguments.callee, false);
             initFunction(domWindow);
-        }
+        };
         domWindow.addEventListener("load", onLoadFunction, false);
     },
     onCloseWindow: function (aWindow) {},
     onWindowTitleChange: function (aWindow, aTitle) {}
-}
+};
 
 var windowMediator =
     Components.classes["@mozilla.org/appshell/window-mediator;1"]
