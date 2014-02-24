@@ -10,7 +10,7 @@ Building a deque of tabs:
  - When the current tab is closed, it is removed from the deque and the next one from the end is selected.
  - Opening a tab in the background adds it at the beginning, so it will be selected after all others have been closed or minimized.
  - Opening a tab in the foreground adds it at the end of the deque and it is selected right away.
- - In both cases, the new tab is opened next to current tab.
+ - In both cases, the new tab is opened next to current tab, unless you set the `extensions.tabdeque.openTabsNextToCurrent` preference to `false` in `about:config`.
  - Selecting a tab moves it to the end of the deque.
  - Clicking the currently selected tab minimizes it, which means it is removed from the deque and will not be selected unless you manually do it.
  - If all tabs are minimized, you will see whatever you've got the `browser.newtab.url` preference set to.
