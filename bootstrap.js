@@ -1,5 +1,5 @@
-Components.utils.import("resource://gre/modules/Services.jsm");
 Components.utils.import("resource://gre/modules/devtools/Console.jsm");
+Components.utils.import("resource://gre/modules/Services.jsm");
 
 var initFunction = function(domWindow) {
     var extensionResource = "chrome://tabdeque/content/tabdeque.jsm";
@@ -11,6 +11,11 @@ var initFunction = function(domWindow) {
 var destroyFunction = function(domWindow) {
     domWindow.gTabDeque.destroy();
     domWindow.gTabDeque = undefined;
+};
+
+var setDefaultPreferences = function() {
+    var branch = Services.prefs.getDefaultBranch("extensions.tabdeque.");
+    branch.setBoolPref("openTabsNextToCurrent", true);
 };
 
 function simpleToDomWindow(aWindow) {
@@ -51,6 +56,7 @@ function callOnOpenWindows(someFunction) {
 function install() {}
 function uninstall() {}
 function startup(data, reason) {
+    setDefaultPreferences();
     callOnOpenWindows(initFunction);
     windowMediator.addListener(windowListener);
 }

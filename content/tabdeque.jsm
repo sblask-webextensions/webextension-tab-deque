@@ -1,4 +1,5 @@
 Components.utils.import("resource://gre/modules/devtools/Console.jsm");
+Components.utils.import("resource://gre/modules/Services.jsm");
 
 EXPORTED_SYMBOLS = ["TabDeque"];
 
@@ -114,11 +115,15 @@ function TabDeque() {
     };
 
     this.onTabOpen = function(anEvent) {
-        if (!this.mimickingAllTabMinimized) {
-            var tab = anEvent.target;
-            // can't check whether tab is being opened in background - start at
-            // beginning and move to end of deque in onTabSelect if necessary
-            this.moveTabToDequeBeginning(tab);
+        if (this.mimickingAllTabMinimized) {
+            // mimic should not be added to deque
+            return;
+        }
+        var tab = anEvent.target;
+        // can't check whether tab is being opened in background - start at
+        // beginning and move to end of deque in onTabSelect if necessary
+        this.moveTabToDequeBeginning(tab);
+        if (Services.prefs.getBoolPref("extensions.tabdeque.openTabsNextToCurrent")) {
             this.gBrowser.moveTabTo(tab, this.gBrowser.mCurrentTab.nextSibling._tPos);
         }
     }.bind(this);
@@ -225,10 +230,7 @@ function TabDeque() {
     };
 
     this.openTab = function(anEvent) {
-        var preferences = Components
-            .classes['@mozilla.org/preferences-service;1']
-            .getService(Components.interfaces.nsIPrefBranch);
-        var url = preferences.getCharPref("browser.newtab.url");
+        var url = Services.prefs.getCharPref("browser.newtab.url");
         return this.gBrowser.loadOneTab(url, {inBackground: false});
     };
 
