@@ -137,9 +137,9 @@ function TabDeque() {
             this.moveTabToDequeEnd(anEvent.target);
         }
         if (anEvent.target === this.allTabsMinimizedMimic) {
-            this.domWindow.document.getElementById('nav-bar').collapsed = true;
+            this.domWindow.document.getElementById('nav-bar').hidden = true;
         } else {
-            this.domWindow.document.getElementById('nav-bar').collapsed = false;
+            this.domWindow.document.getElementById('nav-bar').hidden = false;
         }
     }.bind(this);
 
@@ -287,7 +287,7 @@ function TabDeque() {
             this.allTabsMinimizedMimic.collapsed = true;
             this.allTabsMinimizedMimic.disabled = true;
             this.gBrowser.pinTab(this.allTabsMinimizedMimic);
-            this.domWindow.document.getElementById('nav-bar').collapsed = true;
+            this.domWindow.document.getElementById('nav-bar').hidden = true;
         } else {
             var mimicIndex =
                 this.getTabIndex(this.allTabsMinimizedMimic);
