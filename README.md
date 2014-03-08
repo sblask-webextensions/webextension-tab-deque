@@ -8,22 +8,23 @@ recently used tab` or `last tab selected` other extensions provide.
 Building a deque of tabs:
 -------------------------
 
- - When the current tab is closed, it is removed from the deque and the next
-   one from the end is selected.
- - Opening a tab in the background adds it at the beginning, so it will be
-   selected after all others have been closed or minimized.
- - Opening a tab in the foreground adds it at the end of the deque and it is
+ - When a tab is closed, it is removed from the deque and will not be selected
+   again. If it was the current one, the next one from the front of the deque
+   is selected.
+ - Opening a tab in the background adds it at the end of the deque, so it will
+   be selected after all others have been closed or minimized.
+ - Opening a tab in the foreground adds it at the front of the deque and it is
    selected right away.
  - In both cases, the new tab is opened next to current tab, unless you set
    the `extensions.tabdeque.openTabsNextToCurrent` preference to `false` in
    `about:config`.
- - Selecting a tab moves it to the end of the deque.
+ - Selecting a tab moves it to the front of the deque.
  - Clicking the currently selected tab minimizes it by default which means
    that it is removed from the deque and will not be selected unless you
    manually do it. However, you can set
    `extensions.tabdeque.clickToBackground` to `true` which moves the tab to
-   the beginning of the queue instead of removing it. Thus, the tab will be
-   selected once you closed or minimized all other tabs.
+   the end of the queue instead of removing it. Thus, the tab will be selected
+   once you closed or minimized all other tabs.
  - If all tabs are minimized, you will see whatever you've got the
    `browser.newtab.url` preference set to.
 
@@ -39,7 +40,7 @@ The corresponding functions are `gTabDeque.minimizeCurrentTab()` and
 
 The same applies for
 `Ctrl Alt PageDown`(`gTabDeque.sendCurrentTabToBackground()`) and
-`Ctrl Alt PageUp`(`gTabDeque.selectFirstTabOfDeque`) which allow you to cycle
+`Ctrl Alt PageUp`(`gTabDeque.selectLastTabOfDeque`) which allow you to cycle
 through the deque.
 
 Feedback

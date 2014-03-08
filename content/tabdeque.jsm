@@ -65,14 +65,14 @@ function TabDeque() {
                 this.sendCurrentTabToBackground.bind(this)
             );
         this.keyset.appendChild(sendCurrentTabToBackgroundElement);
-        var selectFirstTabOfDequeElement =
+        var selectLastTabOfDequeElement =
             this.makeKeyboardShortcutElement(
-                "tabdeque-select-first-tab-of-deque",
+                "tabdeque-select-last-tab-of-deque",
                 "VK_PAGE_UP",
                 "accel alt",
-                this.selectFirstTabOfDeque.bind(this)
+                this.selectLastTabOfDeque.bind(this)
             );
-        this.keyset.appendChild(selectFirstTabOfDequeElement);
+        this.keyset.appendChild(selectLastTabOfDequeElement);
     };
 
     this.initialize = function(domWindow) {
@@ -139,9 +139,9 @@ function TabDeque() {
         }
         var tab = anEvent.target;
         // Can't check whether tab is being opened in background - assume here
-        // it is. It's moved to end of deque in onTabSelect if it was opened
+        // it is. It's moved beginning of deque in onTabSelect if it was opened
         // in foreground.
-        this.moveTabToDequeBeginning(tab);
+        this.moveTabToDequeEnd(tab);
         if (Services.prefs.getBoolPref("extensions.tabdeque.openTabsNextToCurrent")) {
             this.gBrowser.moveTabTo(tab, this.gBrowser.mCurrentTab.nextSibling._tPos);
         }
@@ -153,7 +153,7 @@ function TabDeque() {
         // last not minimized tab, but we don't want to add it to the deque
         if (!this.mimickingAllTabMinimized &&
             anEvent.target !== this.allTabsMinimizedMimic) {
-            this.moveTabToDequeEnd(anEvent.target);
+            this.moveTabToDequeFront(anEvent.target);
         }
         if (anEvent.target === this.allTabsMinimizedMimic) {
             this.domWindow.document.getElementById('nav-bar').hidden = true;
@@ -213,20 +213,20 @@ function TabDeque() {
     this.onTabClose = function(anEvent) {
         var closingTab = anEvent.target;
         this.ensureInitialization();
-        this.removeTabFromDeque(closingTab);
+        this.removeFromDeque(closingTab);
         // open a new tab if there aren't any minimized or other tabs
         // show special tab if all tabs are minimized
         // jump to next tab in deque if there are tabs that are no minimized
         var openTabCount = this.allTabsMinimizedMimic ? -1 : 0;
         openTabCount += this.gBrowser.tabs.length;
-        var allTabsMinimized = this.deque.length === 0;
+        var allTabsMinimized = this.isDequeEmpty();
         if (openTabCount <= 1) {
             this.openTab();
         } else if (allTabsMinimized) {
             this.mimicAllTabsMinimized();
         } else if (closingTab.selected) {
-            var currentIndex = this.getTabIndex(closingTab);
-            var nextIndex = this.getTabIndex(this.getNextTab());
+            var currentIndex = this.getTabBarIndex(closingTab);
+            var nextIndex = this.getTabBarIndex(this.getFirstFromDeque());
             // the closing tab is still there when calculating the index,
             // but not when selecting, so need adjustment
             var adjustment = currentIndex < nextIndex ? -1 : 0;
@@ -242,28 +242,28 @@ function TabDeque() {
         this.minimizeTab(this.gBrowser.selectedTab, true);
     };
 
-    this.selectFirstTabOfDeque = function() {
+    this.selectLastTabOfDeque = function() {
         this.ensureInitialization();
-        if (this.deque.length === 0) {
+        if (this.isDequeEmpty()) {
             return;
         }
-        var firstTab = this.deque.shift();
-        this.moveTabToDequeEnd(firstTab);
-        var firstTabIndex = this.getTabIndex(firstTab);
-        this.gBrowser.selectTabAtIndex(firstTabIndex);
+        var lastTab = this.getLastFromDeque();
+        this.moveTabToDequeFront(lastTab);
+        var lastTabIndex = this.getTabBarIndex(lastTab);
+        this.gBrowser.selectTabAtIndex(lastTabIndex);
     };
 
     this.minimizeTab = function(tab, toBackground) {
         this.ensureInitialization();
         if (toBackground) {
-            this.moveTabToDequeBeginning(tab);
+            this.moveTabToDequeEnd(tab);
         } else {
-            this.removeTabFromDeque(tab);
+            this.removeFromDeque(tab);
         }
-        if (this.deque.length === 0) {
+        if (this.isDequeEmpty()) {
             this.mimicAllTabsMinimized();
         } else {
-            var nextTabIndex = this.getTabIndex(this.getNextTab());
+            var nextTabIndex = this.getTabBarIndex(this.getFirstFromDeque());
             this.gBrowser.selectTabAtIndex(nextTabIndex);
         }
     };
@@ -275,7 +275,7 @@ function TabDeque() {
             if (maybeMinimizedTab != this.allTabsMinimizedMimic &&
                 this.deque.indexOf(maybeMinimizedTab) == -1
                 ) {
-                var minimizedTabIndex = this.getTabIndex(maybeMinimizedTab);
+                var minimizedTabIndex = this.getTabBarIndex(maybeMinimizedTab);
                 this.gBrowser.selectTabAtIndex(minimizedTabIndex);
                 return;
             }
@@ -343,23 +343,19 @@ function TabDeque() {
             this.domWindow.document.getElementById('nav-bar').hidden = true;
         } else {
             var mimicIndex =
-                this.getTabIndex(this.allTabsMinimizedMimic);
+                this.getTabBarIndex(this.allTabsMinimizedMimic);
             this.gBrowser.selectTabAtIndex(mimicIndex);
         }
     };
 
-    this.moveTabToDequeBeginning = function(tab) {
-        this.ensureInitialization();
-        // getting duplicates sometimes...
-        this.removeTabFromDeque(tab);
-        this.deque.unshift(tab);
-    };
-
     this.moveTabToDequeEnd = function(tab) {
         this.ensureInitialization();
-        // getting duplicates sometimes...
-        this.removeTabFromDeque(tab);
-        this.deque.push(tab);
+        this.addToDequeEnd(this.removeFromDeque(tab));
+    };
+
+    this.moveTabToDequeFront = function(tab) {
+        this.ensureInitialization();
+        this.addToDequeFront(this.removeFromDeque(tab));
     };
 
     // can't be sure that events are fired for all tabs on startup
@@ -374,19 +370,48 @@ function TabDeque() {
         this.deque = [];
         var tabs = this.gBrowser.tabs;
         for (var tabIndex = 0; tabIndex < tabs.length; tabIndex++) {
-            this.deque.push(tabs[tabIndex]);
+            this.addToDequeEnd(tabs[tabIndex]);
         }
         return this.deque;
     };
 
-    this.removeTabFromDeque = function(tab) {
+    this.isDequeEmpty = function() {
+        return this.deque.length === 0;
+    };
+
+    this.addToDequeFront = function(tab) {
+        this.deque.unshift(tab);
+    };
+
+    this.addToDequeEnd = function(tab) {
+        this.deque.push(tab);
+    };
+
+    this.getFirstFromDeque = function(remove) {
+        if (remove) {
+            return this.deque.shift();
+        } else {
+            return this.deque[0];
+        }
+    };
+
+    this.getLastFromDeque = function(remove) {
+        if (remove) {
+            return this.deque.pop();
+        } else {
+            return this.deque[this.deque.length - 1];
+        }
+    };
+
+    this.removeFromDeque = function(tab) {
         var dequeIndex = this.deque.indexOf(tab);
         if (this.deque.indexOf(tab) >= 0) {
             this.deque.splice(this.deque.indexOf(tab), 1);
         }
+        return tab;
     };
 
-    this.getTabIndex = function(givenTab) {
+    this.getTabBarIndex = function(givenTab) {
         var tabs = this.gBrowser.tabs;
         for (var tabIndex = 0; tabIndex < tabs.length; tabIndex++) {
             if (tabs[tabIndex] === givenTab) {
@@ -394,10 +419,6 @@ function TabDeque() {
             }
         }
         return -1;
-    };
-
-    this.getNextTab = function() {
-        return this.deque[this.deque.length - 1];
     };
 
     // for debugging
