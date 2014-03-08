@@ -314,7 +314,9 @@ function TabDeque() {
                     // redirect request into new tab
                     aRequest.cancel(Components.results.NS_BINDING_ABORTED);
                     this.gBrowser.loadOneTab(
-                        aRequest.name, null, null, null, false, false);
+                        aRequest.name,
+                        {inBackground: false}
+                    );
                 }
             }.bind(this)
         };
