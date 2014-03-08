@@ -358,6 +358,15 @@ function TabDeque() {
         this.addToDequeFront(this.removeFromDeque(tab));
     };
 
+    this.moveTabToSecondPlaceInDeque = function(tab) {
+        this.ensureInitialization();
+        var firstTab = this.getFirstFromDeque(true);
+        if (tab !== firstTab) {
+            this.addToDequeFront(tab);
+        }
+        this.addToDequeFront(firstTab);
+    };
+
     // can't be sure that events are fired for all tabs on startup
     // tabs are missing if initialized too early, use this before first access
     this.ensureInitialization = function() {

@@ -15,9 +15,9 @@ Building a deque of tabs:
    be selected after all others have been closed or minimized.
  - Opening a tab in the foreground adds it at the front of the deque and it is
    selected right away.
- - In both cases, the new tab is opened next to current tab, unless you set
-   the `extensions.tabdeque.openTabsNextToCurrent` preference to `false` in
-   `about:config`.
+ - In both cases, the new tab is (visually) opened next to current tab, unless
+   you set the `extensions.tabdeque.openTabsNextToCurrent` preference to
+   `false` in `about:config`.
  - Selecting a tab moves it to the front of the deque.
  - Clicking the currently selected tab minimizes it by default which means
    that it is removed from the deque and will not be selected unless you
@@ -28,8 +28,8 @@ Building a deque of tabs:
  - If all tabs are minimized, you will see whatever you've got the
    `browser.newtab.url` preference set to.
 
-Keyboard Shortcuts
-------------------
+Keyboard Shortcuts and Javascript Hooks
+---------------------------------------
 
 Use `Shift PageDown` to minimize the currently selected tab. Use `Shift PageUp`
 to select the next minimized tab. You can customize these shortcuts using the
@@ -42,6 +42,11 @@ The same applies for
 `Ctrl Alt PageDown`(`gTabDeque.sendCurrentTabToBackground()`) and
 `Ctrl Alt PageUp`(`gTabDeque.selectLastTabOfDeque`) which allow you to cycle
 through the deque.
+
+You can use `gTabDeque.moveTabToSecondPlaceInDeque(tab)` to move a tab to the
+second place in the deque, which can be useful if you want to open links in
+the background but want to look at them after closing/minimizing the current
+one. [See an example for FireGestures](https://gist.github.com/sblask/9431758)
 
 Feedback
 --------
