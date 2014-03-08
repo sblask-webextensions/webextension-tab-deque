@@ -16,6 +16,7 @@ var destroyFunction = function(domWindow) {
 var setDefaultPreferences = function() {
     var branch = Services.prefs.getDefaultBranch("extensions.tabdeque.");
     branch.setBoolPref("openTabsNextToCurrent", true);
+    branch.setBoolPref("clickToBackground", false);
 };
 
 function simpleToDomWindow(aWindow) {
