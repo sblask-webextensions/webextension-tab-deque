@@ -68,10 +68,10 @@ function TabDeque() {
         this.tabContainer = domWindow.gBrowser.tabContainer;
 
         // we don't want the mimic to be restored after restart...
-        this.domWindow.addEventListener('SSWindowClosing', this.onClose, false);
-        this.tabContainer.addEventListener("TabOpen", this.onTabOpen, false);
-        this.tabContainer.addEventListener("TabSelect", this.onTabSelect, false);
-        this.tabContainer.addEventListener("TabClose", this.onTabClose, false);
+        this.domWindow.addEventListener('SSWindowClosing', this.onClose);
+        this.tabContainer.addEventListener("TabOpen", this.onTabOpen);
+        this.tabContainer.addEventListener("TabSelect", this.onTabSelect);
+        this.tabContainer.addEventListener("TabClose", this.onTabClose);
 
         // TabSelect is not always called when tabs are being restored
         this.handleTabListeners(this.gBrowser.selectedTab);
@@ -104,10 +104,10 @@ function TabDeque() {
 
         this.removeKeyboardShortcuts();
 
-        this.domWindow.removeEventListener('SSWindowClosing', this.onClose, false);
-        this.tabContainer.removeEventListener("TabOpen", this.onTabOpen, false);
-        this.tabContainer.removeEventListener("TabSelect", this.onTabSelect, false);
-        this.tabContainer.removeEventListener("TabClose", this.onTabClose, false);
+        this.domWindow.removeEventListener('SSWindowClosing', this.onClose);
+        this.tabContainer.removeEventListener("TabOpen", this.onTabOpen);
+        this.tabContainer.removeEventListener("TabSelect", this.onTabSelect);
+        this.tabContainer.removeEventListener("TabClose", this.onTabClose);
 
         this.handleTabListeners(undefined);
 
@@ -145,16 +145,28 @@ function TabDeque() {
 
     this.handleTabListeners = function(tab) {
         if (this.currentlySelectedTab) {
-            this.currentlySelectedTab.removeEventListener("mousedown", this.onSelectedTabMouseDown, false);
-            this.currentlySelectedTab.removeEventListener("mouseup", this.onSelectedTabMouseUp, false);
+            this.currentlySelectedTab.removeEventListener(
+                "mousedown",
+                this.onSelectedTabMouseDown
+            );
+            this.currentlySelectedTab.removeEventListener(
+                "mouseup",
+                this.onSelectedTabMouseUp
+            );
         }
         if (tab){
             this.currentlySelectedTab = tab;
             this.currentlySelectedTab.hasMouseDown = false;
             // have to use mouseup and mouseup instead of click as selecting a
             // tab would minimize it again immediately otherwise
-            this.currentlySelectedTab.addEventListener("mousedown", this.onSelectedTabMouseDown, false);
-            this.currentlySelectedTab.addEventListener("mouseup", this.onSelectedTabMouseUp, false);
+            this.currentlySelectedTab.addEventListener(
+                "mousedown",
+                this.onSelectedTabMouseDown
+            );
+            this.currentlySelectedTab.addEventListener(
+                "mouseup",
+                this.onSelectedTabMouseUp
+            );
         }
     };
 
