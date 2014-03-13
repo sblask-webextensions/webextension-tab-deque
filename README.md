@@ -1,9 +1,10 @@
 firefox-tab-deque
 =================
 
-A firefox extension for better tab handling. Inspired by Opera 12 and its
-`Activate the last active tab` setting, which is not the same as `most
-recently used tab` or `last tab selected` other extensions provide.
+A [Firefox extension](https://addons.mozilla.org/en-US/firefox/addon/tab-deque/)
+for better tab handling. Inspired by Opera 12 and its `Activate the last
+active tab` setting, which is not the same as `most recently used tab` or
+`last tab selected` other extensions provide.
 
 Building a deque of tabs:
 -------------------------
@@ -24,7 +25,7 @@ Building a deque of tabs:
    manually do it. However, you can set
    `extensions.tabdeque.clickToBackground` to `true` which moves the tab to
    the end of the queue instead of removing it. Thus, the tab will be selected
-   once you closed or minimized all other tabs.
+   once you've closed or minimized all other tabs.
  - If all tabs are minimized, you will see whatever you've got the
    `browser.newtab.url` preference set to.
 
@@ -40,7 +41,7 @@ The corresponding functions are `gTabDeque.minimizeCurrentTab()` and
 
 The same applies for
 `Ctrl Alt PageDown`(`gTabDeque.sendCurrentTabToBackground()`) and
-`Ctrl Alt PageUp`(`gTabDeque.selectLastTabOfDeque`) which allow you to cycle
+`Ctrl Alt PageUp`(`gTabDeque.selectLastTabOfDeque()`) which allow you to cycle
 through the deque.
 
 You can use `gTabDeque.moveTabToSecondPlaceInDeque(tab)` to move a tab to the
