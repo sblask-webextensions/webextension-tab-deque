@@ -49,6 +49,12 @@ second place in the deque, which can be useful if you want to open links in
 the background but want to look at them after closing/minimizing the current
 one. [See an example for FireGestures](https://gist.github.com/sblask/9431758)
 
+Known Issues
+------------
+
+ - Tab Deque doesn't work well with [Tab Groups](https://support.mozilla.org/en-US/kb/tab-groups-organize-tabs). If the next tab in the deque is in another Tab Group it doesn't get selected on closing the current tab
+ - There have been reports that [Tab Mix Plus](https://addons.mozilla.org/en-US/firefox/addon/tab-mix-plus/) is incompatible to Tab Deque, even though I am not sure what kind of problem you can expect.
+
 Feedback
 --------
 
