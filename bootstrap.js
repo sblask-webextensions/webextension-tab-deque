@@ -1,8 +1,8 @@
 Components.utils.import("resource://gre/modules/devtools/Console.jsm");
 Components.utils.import("resource://gre/modules/Services.jsm");
 
+var extensionResource = "chrome://tabdeque/content/tabdeque.jsm";
 var initFunction = function(domWindow) {
-    var extensionResource = "chrome://tabdeque/content/tabdeque.jsm";
     Components.utils.import(extensionResource);
     domWindow.gTabDeque = new TabDeque();
     domWindow.gTabDeque.initialize(domWindow);
@@ -11,6 +11,7 @@ var initFunction = function(domWindow) {
 var destroyFunction = function(domWindow) {
     domWindow.gTabDeque.destroy();
     domWindow.gTabDeque = undefined;
+    Components.utils.unload(extensionResource);
 };
 
 var setDefaultPreferences = function() {
