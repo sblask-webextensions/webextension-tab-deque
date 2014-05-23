@@ -87,6 +87,7 @@ function TabDeque() {
 
         // we don't want the mimic to be restored after restart...
         this.domWindow.addEventListener('SSWindowClosing', this.onClose);
+
         this.tabContainer.addEventListener("TabOpen", this.onTabOpen);
         this.tabContainer.addEventListener("TabSelect", this.onTabSelect);
         this.tabContainer.addEventListener("TabClose", this.onTabClose);
@@ -137,14 +138,10 @@ function TabDeque() {
             // mimic should not be added to deque
             return;
         }
-        var tab = anEvent.target;
         // Can't check whether tab is being opened in background - assume here
-        // it is. It's moved beginning of deque in onTabSelect if it was opened
-        // in foreground.
-        this.moveTabToDequeEnd(tab);
-        if (Services.prefs.getBoolPref("extensions.tabdeque.openTabsNextToCurrent")) {
-            this.gBrowser.moveTabTo(tab, this.gBrowser.mCurrentTab.nextSibling._tPos);
-        }
+        // it is. It's moved to beginning of deque in onTabSelect if it was
+        // opened in foreground.
+        this.moveTabToDequeEnd(anEvent.target);
     }.bind(this);
 
     this.onTabSelect = function(anEvent) {

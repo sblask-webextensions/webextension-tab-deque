@@ -16,9 +16,6 @@ Building a deque of tabs:
    be selected after all others have been closed or minimized.
  - Opening a tab in the foreground adds it at the front of the deque and it is
    selected right away.
- - In both cases, the new tab is (visually) opened next to current tab, unless
-   you set the `extensions.tabdeque.openTabsNextToCurrent` preference to
-   `false` in `about:config`.
  - Selecting a tab moves it to the front of the deque.
  - Clicking the currently selected tab minimizes it by default which means
    that it is removed from the deque and will not be selected unless you
@@ -48,6 +45,14 @@ You can use `gTabDeque.moveTabToSecondPlaceInDeque(tab)` to move a tab to the
 second place in the deque, which can be useful if you want to open links in
 the background but want to look at them after closing/minimizing the current
 one. [See an example for FireGestures](https://gist.github.com/sblask/9431758)
+
+Notes
+-----
+
+ - Previously there was a setting `extensions.tabdeque.openTabsNextToCurrent`,
+   which has now been removed in favour the
+   [Open Tabs Next to Current](https://addons.mozilla.org/en-US/firefox/addon/open-tabs-next-to-current/)
+   Add-On.
 
 Known Issues
 ------------
