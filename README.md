@@ -6,6 +6,12 @@ for better tab handling. Inspired by Opera 12 and its `Activate the last
 active tab` setting, which is not the same as `most recently used tab` or
 `last tab selected` other extensions provide.
 
+Most users will recognize the behaviour from the way windows are handled on
+their Desktop. When using Windows(with stacking disabled) or for example Xfce
+under Linux, opening a window adds it to the taskbar, clicking another one will
+focus that one, closing or minimizing will bring the previous one back to
+focus. This extension will do that and more.
+
 Building a deque of tabs:
 -------------------------
 
@@ -22,7 +28,10 @@ Building a deque of tabs:
    manually do it. However, you can set
    `extensions.tabdeque.clickToBackground` to `true` which moves the tab to
    the end of the queue instead of removing it. Thus, the tab will be selected
-   once you've closed or minimized all other tabs.
+   once you've closed or minimized all other tabs. Having one tab open,
+   clicking it would not do anything(it will be minimized and selected again
+   immediately). Having two tabs open, you would alternate between the two,
+   with three tabs, you would cycle one -> two -> three -> one -> ...
  - If all tabs are minimized, you will see whatever you've got the
    `browser.newtab.url` preference set to.
 
