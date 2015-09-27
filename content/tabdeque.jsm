@@ -279,8 +279,25 @@ function TabDeque() {
         }
     };
 
+    this.getNewTabURL = function() {
+        try {
+            return Services.prefs.getCharPref("browser.newtab.url");
+        }
+        catch(error) {
+            console.log("browser.newtab.url preference not available");
+        }
+        try {
+            Components.utils.import('resource:///modules/NewTabURL.jsm');
+            return NewTabURL.get();
+        }
+        catch(error) {
+            console.log("NewTabURL.jsm preference not available");
+        }
+        return "about:newtab";
+    };
+
     this.openTab = function(anEvent) {
-        var url = Services.prefs.getCharPref("browser.newtab.url");
+        var url = this.getNewTabURL()
         return this.gBrowser.loadOneTab(url, {inBackground: false});
     };
 
