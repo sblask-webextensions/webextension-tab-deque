@@ -257,6 +257,10 @@ function TabDeque() {
         } else {
             this.removeFromDeque(tab);
         }
+        while (this.getFirstFromDeque() &&
+            this.getFirstFromDeque().getAttribute("disabled") === "true") {
+            this.getFirstFromDeque(true);
+        }
         if (this.isDequeEmpty()) {
             this.mimicAllTabsMinimized();
         } else {
