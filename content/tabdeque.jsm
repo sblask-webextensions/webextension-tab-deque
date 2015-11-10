@@ -187,7 +187,8 @@ function TabDeque() {
     };
 
     this.onSelectedTabMouseDown = function(anEvent) {
-        if (anEvent.originalTarget.className !== 'tab-close-button') {
+        if (anEvent.originalTarget.className !== 'tab-close-button' &&
+            anEvent.originalTarget.className !== 'tab-icon-sound') {
             var tab = anEvent.target;
             if (anEvent.button === 0) {
                 tab.hasMouseDown = true;
