@@ -10,9 +10,19 @@ browser.contextMenus.create(
     }
 );
 
-browser.contextMenus.onClicked.addListener((info, tab) => {
-    console.log("Item " + info.menuItemId + " clicked " + "in tab " + tab.id);
-});
+browser.contextMenus.onClicked.addListener(
+    (info, tab) => {
+        if (info.menuItemId === "send-to-end-of-tabdeque") {
+            let tabId = tab.id;
+            let windowId = tab.windowId;
+            let currentDeque = backup(getWindowDeques(windowId)).current;
+
+            removeFromDeque(tabId, currentDeque);
+            currentDeque.push(tabId);
+            browser.tabs.update(currentDeque[0], {active: true});
+        }
+    }
+);
 
 browser.tabs.onCreated.addListener(
     (tab) => {
