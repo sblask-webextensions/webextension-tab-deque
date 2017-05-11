@@ -26,9 +26,10 @@ Building a deque of tabs:
    from the front of the deque is selected. It's bit like minimizing a window
    on your desktop, but as there is no desktop to show when all other tabs have
    been "minimized"/closed, the tab gets re-selected. This is currently an
-   option in the tab's context menu. Ideally a simple left click would do that
-   too (like a previous version of this extension based on a different API
-   did), but there is currently no API for detecting clicks on tabs.
+   option in the tab's (if supported by the browser) and page's context menu.
+   Ideally a simple left click would do that too (like a previous version of
+   this extension based on a different API did), but there is currently no API
+   for detecting clicks on tabs.
 
 Feedback
 --------

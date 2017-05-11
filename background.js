@@ -5,6 +5,7 @@ browser.contextMenus.create(
         id: "send-to-end-of-tabdeque",
         title: "Send to end of TabDeque",
         contexts: [
+            "page",
             "tab",
         ],
     }
