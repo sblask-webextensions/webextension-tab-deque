@@ -1,5 +1,19 @@
 let deques = {};
 
+browser.contextMenus.create(
+    {
+        id: "send-to-end-of-tabdeque",
+        title: "Send to end of TabDeque",
+        contexts: [
+            "tab",
+        ],
+    }
+);
+
+browser.contextMenus.onClicked.addListener((info, tab) => {
+    console.log("Item " + info.menuItemId + " clicked " + "in tab " + tab.id);
+});
+
 browser.tabs.onCreated.addListener(
     (tab) => {
         let tabId = tab.id;
