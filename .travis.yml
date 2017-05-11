@@ -1,5 +1,8 @@
-language: javascript
+language: node_js
+node_js:
+  - "node"
 install:
-    - npm install -g eslint
+    - npm install
 script:
-    - eslint index.js lib data test
+    - npm run test
+    - npm run lint
