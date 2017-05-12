@@ -29,7 +29,10 @@ Building a deque of tabs:
    option in the tab's (if supported by the browser) and page's context menu.
    Ideally a simple left click would do that too (like a previous version of
    this extension based on a different API did), but there is currently no API
-   for detecting clicks on tabs.
+   for detecting clicks on tabs. There is also a keyboard shortcut:
+   `Ctrl-Down`.
+ - A kind of undo of the latter is `Ctrl-Up`, it selects the tab at the end of
+   the deque and moves it to the front of the deque.
 
 Feedback
 --------

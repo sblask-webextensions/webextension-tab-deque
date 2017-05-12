@@ -12,10 +12,16 @@
         ]
     },
     "commands": {
-        "open-new-tab-at-default-location": {
-            "description": "Open new tab at default location",
+        "send-tab-to-end-of-tabdeque": {
+            "description": "Send tab to end of TabDeque",
             "suggested_key": {
-                "default": "Ctrl+Y"
+                "default": "Ctrl+Down"
+            }
+        },
+        "select-tab-from-end-of-tabdeque": {
+            "description": "Select tab from end of TabDeque",
+            "suggested_key": {
+                "default": "Ctrl+Up"
             }
         }
     },
