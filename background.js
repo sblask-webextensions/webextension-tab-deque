@@ -46,7 +46,9 @@ browser.tabs.onCreated.addListener(
         let windowId = tab.windowId;
         let currentDeque = backup(getWindowDeques(windowId)).current;
 
-        currentDeque.push(tabId);
+        if (currentDeque.indexOf(tabId) === -1) {
+            currentDeque.push(tabId);
+        }
     }
 );
 
