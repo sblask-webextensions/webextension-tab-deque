@@ -1,4 +1,4 @@
-let deques = {};
+let deques = undefined;
 
 browser.commands.onCommand.addListener(function(command) {
     if (command === "send-tab-to-end-of-tabdeque") {
@@ -126,6 +126,10 @@ function handleRemove(windowId, tabId) {
 }
 
 function getWindowDeques(windowId) {
+    if (deques === undefined) {
+        deques = {};
+    }
+
     if (!deques[windowId]) {
         deques[windowId] = {
             previous: [],
@@ -150,3 +154,22 @@ function removeFromDeque(tabId, deque) {
 
     return dequeIndex == 0 && deque.length > 0;
 }
+
+function initializeDeques(windowInfoArray) {
+    if (deques !== undefined) {
+        return;
+    }
+
+    deques = {};
+    for (let windowInfo of windowInfoArray) {
+        deques[windowInfo.id] = {
+            previous: [],
+            current: windowInfo.tabs.map((tab) => { return tab.id; }),
+        };
+    }
+}
+
+browser.windows.getAll({
+    populate: true,
+    windowTypes: ["normal"],
+}).then(initializeDeques);
