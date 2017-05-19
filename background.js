@@ -1,4 +1,5 @@
 let deques = undefined;
+let nextTabId = undefined;
 
 browser.commands.onCommand.addListener(function(command) {
     if (command === "send-tab-to-end-of-tabdeque") {
@@ -65,6 +66,16 @@ browser.tabs.onActivated.addListener(
     (activeInfo) => {
         let tabId = activeInfo.tabId;
         let windowId = activeInfo.windowId;
+
+        if (nextTabId !== undefined) {
+            // skip default activation after remove
+            if (nextTabId !== tabId) {
+                return;
+            } else {
+                nextTabId = undefined;
+            }
+        }
+
         let currentDeque = backup(getWindowDeques(windowId)).current;
 
         removeFromDeque(tabId, currentDeque);
@@ -123,7 +134,8 @@ function handleRemove(windowId, tabId) {
 
     let wasFirstAndElementsLeft = removeFromDeque(tabId, currentDeque);
     if (wasFirstAndElementsLeft) {
-        browser.tabs.update(currentDeque[0], {active: true});
+        nextTabId = currentDeque[0];
+        browser.tabs.update(nextTabId, {active: true});
     }
 }
 
