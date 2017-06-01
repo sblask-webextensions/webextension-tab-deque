@@ -1,0 +1,9 @@
+{
+    "preset": "airbnb",
+    "requirePaddingNewLinesBeforeLineComments": false,
+    "validateQuoteMarks": '"',
+    "validateIndentation": 4,
+    "excludeFiles": [
+        "browser-polyfill.js",
+    ],
+}
