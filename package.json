@@ -27,5 +27,5 @@
         "test": "web-ext lint"
     },
     "title": "A firefox extension for better tab handling. Inspired by Opera 12.",
-    "version": "2.0.0b"
+    "version": "2.0.0"
 }
