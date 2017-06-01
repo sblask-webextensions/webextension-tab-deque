@@ -128,9 +128,7 @@ function runOnCurrentTab(givenFunction) {
 }
 
 function handleRemove(windowId, tabId) {
-    let windowDeques = getWindowDeques(windowId);
-    windowDeques.current = windowDeques.previous.slice();
-    let currentDeque = windowDeques.current;
+    let currentDeque = backup(getWindowDeques(windowId)).current;
 
     let wasFirstAndElementsLeft = removeFromDeque(tabId, currentDeque);
     if (wasFirstAndElementsLeft) {
