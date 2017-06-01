@@ -26,7 +26,7 @@ browser.contextMenus.create(
         title: "Send tab to end of TabDeque",
         contexts: [
             "page",
-            "tab",
+            // firefox-only: "tab",
         ],
     }
 );
