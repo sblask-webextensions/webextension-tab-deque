@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.org/sblask/firefox-tab-deque.svg?branch=master)](https://travis-ci.org/sblask/firefox-tab-deque)
 
-firefox-tab-deque
-=================
+Tab Deque
+=========
 
 A webextension for better tab handling. Inspired by Opera 12 and its `Activate
 the last active tab` setting, which is not the same as `most recently used tab`
