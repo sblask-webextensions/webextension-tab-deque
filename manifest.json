@@ -26,8 +26,8 @@
             }
         }
     },
-    "description": "A firefox extension for better tab handling. Inspired by Opera 12.",
-    "homepage_url": "https://addons.mozilla.org/firefox/addon/tab-deque/",
+    "description": "A webextension for better tab handling. Inspired by Opera 12.",
+    "homepage_url": "https://github.com/sblask/webextension-tab-deque",
     "icons": {
         "128": "icon-128x128.png",
         "16": "icon-16x16.png",

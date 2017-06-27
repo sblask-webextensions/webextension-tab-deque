@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/sblask/firefox-tab-deque.svg?branch=master)](https://travis-ci.org/sblask/firefox-tab-deque)
+[![Build Status](https://travis-ci.org/sblask/webextension-tab-deque.svg?branch=master)](https://travis-ci.org/sblask/webextension-tab-deque)
 
 Tab Deque
 =========
@@ -38,6 +38,6 @@ Feedback
 --------
 
 You can report bugs or make feature requests on
-[Github](https://github.com/sblask/firefox-tab-deque).
+[Github](https://github.com/sblask/webextension-tab-deque).
 
 Patches are welcome.
