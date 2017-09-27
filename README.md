@@ -38,6 +38,6 @@ Feedback
 --------
 
 You can report bugs or make feature requests on
-[Github](https://github.com/sblask/webextension-tab-deque).
+[Github](https://github.com/sblask/webextension-tab-deque)
 
 Patches are welcome.
