@@ -34,6 +34,11 @@ Building a deque of tabs:
  - A kind of undo of the latter is `Ctrl-Up`, it selects the tab at the end of
    the deque and moves it to the front of the deque.
 
+Privacy Policy
+--------------
+
+This extension does not collect or send data of any kind to third parties.
+
 Feedback
 --------
 
