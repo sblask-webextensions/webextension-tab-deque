@@ -1,23 +1,29 @@
+const OPTION_DISABLE_KEYBOARD_SHORTCUTS = "disableKeyboardShortcuts";
+
 let deques = undefined;
 let nextTabId = undefined;
 
-browser.commands.onCommand.addListener(function(command) {
-    if (command === "send-tab-to-end-of-tabdeque") {
-        runOnCurrentTab(
-            (tab) => {
-                let tabId = tab.id;
-                let windowId = tab.windowId;
-                sendTabToEndOfDeque(windowId, tabId);
+browser.commands.onCommand.addListener(command => {
+    browser.storage.local.get(OPTION_DISABLE_KEYBOARD_SHORTCUTS, result => {
+        if (!result[OPTION_DISABLE_KEYBOARD_SHORTCUTS]) {
+            if (command === "send-tab-to-end-of-tabdeque") {
+                runOnCurrentTab(
+                    (tab) => {
+                        let tabId = tab.id;
+                        let windowId = tab.windowId;
+                        sendTabToEndOfDeque(windowId, tabId);
+                    }
+                );
+            } else if (command === "select-tab-from-end-of-tabdeque") {
+                runOnCurrentTab(
+                    (tab) => {
+                        let windowId = tab.windowId;
+                        selectTabFromEndOfDeque(windowId);
+                    }
+                );
             }
-        );
-    } else if (command === "select-tab-from-end-of-tabdeque") {
-        runOnCurrentTab(
-            (tab) => {
-                let windowId = tab.windowId;
-                selectTabFromEndOfDeque(windowId);
-            }
-        );
-    }
+        }
+    });
 });
 
 browser.contextMenus.create(
