@@ -34,6 +34,14 @@ Building a deque of tabs:
  - A kind of undo of the latter is `Ctrl-Up`, it selects the tab at the end of
    the deque and moves it to the front of the deque.
 
+Known Issues
+------------
+
+ - If you have autoplay of audio/video content enabled, unexpected tabs might
+   start playing the content. As Tab Deque modifies the tab activation order,
+   it might activate a tab different from what the browser expects. There is no
+   way to work around this problem.
+
 Privacy Policy
 --------------
 
