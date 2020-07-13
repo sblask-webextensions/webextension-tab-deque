@@ -10,15 +10,15 @@ browser.commands.onCommand.addListener(command => {
                 if (command === "send-tab-to-end-of-tabdeque") {
                     runOnCurrentTab(
                         (tab) => {
-                            let tabId = tab.id;
-                            let windowId = tab.windowId;
+                            const tabId = tab.id;
+                            const windowId = tab.windowId;
                             sendTabToEndOfDeque(windowId, tabId);
                         }
                     );
                 } else if (command === "select-tab-from-end-of-tabdeque") {
                     runOnCurrentTab(
                         (tab) => {
-                            let windowId = tab.windowId;
+                            const windowId = tab.windowId;
                             selectTabFromEndOfDeque(windowId);
                         }
                     );
@@ -41,8 +41,8 @@ browser.contextMenus.create(
 browser.contextMenus.onClicked.addListener(
     (info, tab) => {
         if (info.menuItemId === "send-tab-to-end-of-tabdeque") {
-            let tabId = tab.id;
-            let windowId = tab.windowId;
+            const tabId = tab.id;
+            const windowId = tab.windowId;
             sendTabToEndOfDeque(windowId, tabId);
         }
     }
@@ -50,9 +50,9 @@ browser.contextMenus.onClicked.addListener(
 
 browser.tabs.onCreated.addListener(
     (tab) => {
-        let tabId = tab.id;
-        let windowId = tab.windowId;
-        let currentDeque = backup(getWindowDeques(windowId)).current;
+        const tabId = tab.id;
+        const windowId = tab.windowId;
+        const currentDeque = backup(getWindowDeques(windowId)).current;
 
         if (currentDeque.indexOf(tabId) === -1) {
             currentDeque.push(tabId);
@@ -62,8 +62,8 @@ browser.tabs.onCreated.addListener(
 
 browser.tabs.onAttached.addListener(
     (tabId, attachInfo) => {
-        let windowId = attachInfo.newWindowId;
-        let currentDeque = backup(getWindowDeques(windowId)).current;
+        const windowId = attachInfo.newWindowId;
+        const currentDeque = backup(getWindowDeques(windowId)).current;
 
         currentDeque.unshift(tabId);
     }
@@ -71,8 +71,8 @@ browser.tabs.onAttached.addListener(
 
 browser.tabs.onActivated.addListener(
     (activeInfo) => {
-        let tabId = activeInfo.tabId;
-        let windowId = activeInfo.windowId;
+        const tabId = activeInfo.tabId;
+        const windowId = activeInfo.windowId;
 
         if (nextTabId !== undefined) {
             // skip default activation after remove
@@ -83,7 +83,7 @@ browser.tabs.onActivated.addListener(
             }
         }
 
-        let currentDeque = backup(getWindowDeques(windowId)).current;
+        const currentDeque = backup(getWindowDeques(windowId)).current;
 
         removeFromDeque(tabId, currentDeque);
         currentDeque.unshift(tabId);
@@ -92,20 +92,20 @@ browser.tabs.onActivated.addListener(
 
 browser.tabs.onRemoved.addListener(
     (tabId, removeInfo) => {
-        let windowId = removeInfo.windowId;
+        const windowId = removeInfo.windowId;
         handleRemove(windowId, tabId);
     }
 );
 
 browser.tabs.onDetached.addListener(
     (tabId, detachInfo) => {
-        let windowId = detachInfo.oldWindowId;
+        const windowId = detachInfo.oldWindowId;
         handleRemove(windowId, tabId);
     }
 );
 
 function sendTabToEndOfDeque(windowId, tabId) {
-    let currentDeque = backup(getWindowDeques(windowId)).current;
+    const currentDeque = backup(getWindowDeques(windowId)).current;
 
     removeFromDeque(tabId, currentDeque);
     currentDeque.push(tabId);
@@ -113,8 +113,8 @@ function sendTabToEndOfDeque(windowId, tabId) {
 }
 
 function selectTabFromEndOfDeque(windowId) {
-    let currentDeque = backup(getWindowDeques(windowId)).current;
-    let tabId = currentDeque[currentDeque.length - 1];
+    const currentDeque = backup(getWindowDeques(windowId)).current;
+    const tabId = currentDeque[currentDeque.length - 1];
 
     removeFromDeque(tabId, currentDeque);
     currentDeque.unshift(tabId);
@@ -135,9 +135,9 @@ function runOnCurrentTab(givenFunction) {
 }
 
 function handleRemove(windowId, tabId) {
-    let currentDeque = backup(getWindowDeques(windowId)).current;
+    const currentDeque = backup(getWindowDeques(windowId)).current;
 
-    let wasFirstAndElementsLeft = removeFromDeque(tabId, currentDeque);
+    const wasFirstAndElementsLeft = removeFromDeque(tabId, currentDeque);
     if (wasFirstAndElementsLeft) {
         nextTabId = currentDeque[0];
         browser.tabs.update(nextTabId, {active: true});
@@ -165,7 +165,7 @@ function backup(windowDeques) {
 }
 
 function removeFromDeque(tabId, deque) {
-    let dequeIndex = deque.indexOf(tabId);
+    const dequeIndex = deque.indexOf(tabId);
 
     if (dequeIndex >= 0) {
         deque.splice(dequeIndex, 1);
@@ -180,7 +180,7 @@ function initializeDeques(windowInfoArray) {
     }
 
     deques = {};
-    for (let windowInfo of windowInfoArray) {
+    for (const windowInfo of windowInfoArray) {
         deques[windowInfo.id] = {
             previous: [],
             current: windowInfo.tabs.map((tab) => { return tab.id; }),
