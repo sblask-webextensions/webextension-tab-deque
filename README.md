@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/sblask/webextension-tab-deque.svg?branch=master)](https://travis-ci.org/sblask/webextension-tab-deque)
+[![Build Status](https://github.com/sblask/webextension-tab-deque/actions/workflows/build.yml/badge.svg)](https://github.com/sblask/webextension-tab-deque/actions/workflows/build.yml)
 
 Tab Deque
 =========
