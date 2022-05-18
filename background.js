@@ -1,4 +1,5 @@
 const OPTION_DISABLE_KEYBOARD_SHORTCUTS = "disableKeyboardShortcuts";
+const OPTION_ADD_BACKGROUND_TABS_TO_FRONT = "addBackgroundTabsToFront";
 
 let deques = undefined;
 let nextTabId = undefined;
@@ -55,7 +56,16 @@ browser.tabs.onCreated.addListener(
         const currentDeque = backup(getWindowDeques(windowId)).current;
 
         if (currentDeque.indexOf(tabId) === -1) {
-            currentDeque.push(tabId);
+            browser.storage.local.get(OPTION_ADD_BACKGROUND_TABS_TO_FRONT)
+                .then(result => {
+                    if (!result[OPTION_ADD_BACKGROUND_TABS_TO_FRONT]) {
+                        currentDeque.push(tabId);
+                    } else {
+                        currentTab = currentDeque.shift()
+                        currentDeque.unshift(tabId);
+                        currentDeque.unshift(currentTab);
+                    }
+                });
         }
     }
 );

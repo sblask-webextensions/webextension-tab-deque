@@ -1,22 +1,26 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8">
-        <link rel="stylesheet" type="text/css" href="./options.css">
-    </head>
 
-    <body>
-        <form>
-            <fieldset>
-                <div class="box-wrapper">
-                    <input type="checkbox" id="disableKeyboardShortcuts"></input>
-                    <label for="disableKeyboardShortcuts">Disable Keyboard Shortcuts</label>
-                </div>
-                <legend>Options</legend>
-            </fieldset>
-        </form>
-        <script src="../browser-polyfill.js"></script>
-        <script src="./options.js"></script>
-    </body>
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="./options.css">
+</head>
+
+<body>
+    <form>
+        <fieldset>
+            <div class="box-wrapper">
+                <input type="checkbox" id="disableKeyboardShortcuts"></input>
+                <label for="disableKeyboardShortcuts">Disable Keyboard Shortcuts</label>
+                <input type="checkbox" id="addBackgroundTabsToFront"></input>
+                <label for="addBackgroundTabsToFront">When opening a tab in the background add it under the current tab
+                    in the deque in stead of at the back.</label>
+            </div>
+            <legend>Options</legend>
+        </fieldset>
+    </form>
+    <script src="../browser-polyfill.js"></script>
+    <script src="./options.js"></script>
+</body>
 
 </html>

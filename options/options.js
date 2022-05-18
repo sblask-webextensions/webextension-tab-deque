@@ -1,12 +1,14 @@
 const OPTION_DISABLE_KEYBOARD_SHORTCUTS = "disableKeyboardShortcuts";
-const CSS_ID_DISABLE_KEYBOARD_SHORTCUTS = "disableKeyboardShortcuts";
+const OPTION_ADD_BACKGROUND_TABS_TO_FRONT = "addBackgroundTabsToFront";
 
 function restoreOptions() {
     browser.storage.local.get([
         OPTION_DISABLE_KEYBOARD_SHORTCUTS,
+        OPTION_ADD_BACKGROUND_TABS_TO_FRONT,
     ]).then(
         result => {
-            setBooleanValue(CSS_ID_DISABLE_KEYBOARD_SHORTCUTS, result[OPTION_DISABLE_KEYBOARD_SHORTCUTS]);
+            setBooleanValue(OPTION_DISABLE_KEYBOARD_SHORTCUTS, result[OPTION_DISABLE_KEYBOARD_SHORTCUTS]);
+            setBooleanValue(OPTION_ADD_BACKGROUND_TABS_TO_FRONT, result[OPTION_ADD_BACKGROUND_TABS_TO_FRONT]);
         }
     );
 }
@@ -27,7 +29,8 @@ function setBooleanValue(elementID, newValue) {
 function saveOptions(event) {
     event.preventDefault();
     browser.storage.local.set({
-        [OPTION_DISABLE_KEYBOARD_SHORTCUTS]: document.getElementById(CSS_ID_DISABLE_KEYBOARD_SHORTCUTS).checked,
+        [OPTION_DISABLE_KEYBOARD_SHORTCUTS]: document.getElementById(OPTION_DISABLE_KEYBOARD_SHORTCUTS).checked,
+        [OPTION_ADD_BACKGROUND_TABS_TO_FRONT]: document.getElementById(OPTION_ADD_BACKGROUND_TABS_TO_FRONT).checked,
     });
 }
 
