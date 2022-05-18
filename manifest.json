@@ -34,6 +34,12 @@
             "suggested_key": {
                 "default": "Ctrl+Down"
             }
+        },
+        "toggle-add-background-tabs-after-current-option": {
+            "description": "Toggle `Insert new tabs into TabDeque after current tabs` option",
+            "suggested_key": {
+                "default": "Ctrl+Shift+I"
+            }
         }
     },
     "description": "A webextension for better tab handling. Inspired by Opera 12.",

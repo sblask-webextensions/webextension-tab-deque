@@ -1,4 +1,5 @@
 const OPTION_DISABLE_KEYBOARD_SHORTCUTS = "disableKeyboardShortcuts";
+const OPTION_ADD_BACKGROUND_TABS_AFTER_CURRENT = "addBackgroundTabsAfterCurrent";
 const STATE_STORAGE_KEY = "tabDequeState";
 
 let deques = undefined;
@@ -10,6 +11,14 @@ browser.commands.onCommand.addListener((command) => {
     runWithState(async () => {
         const result = await browser.storage.local.get(OPTION_DISABLE_KEYBOARD_SHORTCUTS);
         if (result[OPTION_DISABLE_KEYBOARD_SHORTCUTS]) {
+            return;
+        }
+
+        if (command === "toggle-add-background-tabs-after-current-option") {
+            const option = await browser.storage.local.get(OPTION_ADD_BACKGROUND_TABS_AFTER_CURRENT);
+            await browser.storage.local.set({
+                [OPTION_ADD_BACKGROUND_TABS_AFTER_CURRENT]: !option[OPTION_ADD_BACKGROUND_TABS_AFTER_CURRENT],
+            });
             return;
         }
 
@@ -48,13 +57,18 @@ browser.contextMenus.onClicked.addListener(
 
 browser.tabs.onCreated.addListener(
     (tab) => {
-        runWithState(() => {
+        runWithState(async () => {
             const tabId = tab.id;
             const windowId = tab.windowId;
             const currentDeque = backup(getWindowDeques(windowId)).current;
 
             if (currentDeque.indexOf(tabId) === -1) {
-                currentDeque.push(tabId);
+                const result = await browser.storage.local.get(OPTION_ADD_BACKGROUND_TABS_AFTER_CURRENT);
+                if (result[OPTION_ADD_BACKGROUND_TABS_AFTER_CURRENT]) {
+                    currentDeque.splice(1, 0, tabId);
+                } else {
+                    currentDeque.push(tabId);
+                }
             }
         });
     }
