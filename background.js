@@ -1,5 +1,5 @@
 const OPTION_DISABLE_KEYBOARD_SHORTCUTS = "disableKeyboardShortcuts";
-const OPTION_ADD_BACKGROUND_TABS_TO_FRONT = "addBackgroundTabsToFront";
+const OPTION_ADD_BACKGROUND_TABS_AFTER_CURRENT = "addBackgroundTabsAfterCurrent";
 
 let deques = undefined;
 let nextTabId = undefined;
@@ -56,9 +56,9 @@ browser.tabs.onCreated.addListener(
         const currentDeque = backup(getWindowDeques(windowId)).current;
 
         if (currentDeque.indexOf(tabId) === -1) {
-            browser.storage.local.get(OPTION_ADD_BACKGROUND_TABS_TO_FRONT)
+            browser.storage.local.get(OPTION_ADD_BACKGROUND_TABS_AFTER_CURRENT)
                 .then(result => {
-                    if (!result[OPTION_ADD_BACKGROUND_TABS_TO_FRONT]) {
+                    if (!result[OPTION_ADD_BACKGROUND_TABS_AFTER_CURRENT]) {
                         currentDeque.push(tabId);
                     } else {
                         currentDeque.splice(1, 0, currentTab);
@@ -117,7 +117,7 @@ function sendTabToEndOfDeque(windowId, tabId) {
 
     removeFromDeque(tabId, currentDeque);
     currentDeque.push(tabId);
-    browser.tabs.update(currentDeque[0], {active: true});
+    browser.tabs.update(currentDeque[0], { active: true });
 }
 
 function selectTabFromEndOfDeque(windowId) {
@@ -126,7 +126,7 @@ function selectTabFromEndOfDeque(windowId) {
 
     removeFromDeque(tabId, currentDeque);
     currentDeque.unshift(tabId);
-    browser.tabs.update(currentDeque[0], {active: true});
+    browser.tabs.update(currentDeque[0], { active: true });
 }
 
 function runOnCurrentTab(givenFunction) {
@@ -148,7 +148,7 @@ function handleRemove(windowId, tabId) {
     const wasFirstAndElementsLeft = removeFromDeque(tabId, currentDeque);
     if (wasFirstAndElementsLeft) {
         nextTabId = currentDeque[0];
-        browser.tabs.update(nextTabId, {active: true});
+        browser.tabs.update(nextTabId, { active: true });
     }
 }
 
