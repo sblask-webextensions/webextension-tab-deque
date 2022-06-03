@@ -23,6 +23,14 @@ browser.commands.onCommand.addListener(command => {
                             selectTabFromEndOfDeque(windowId);
                         }
                     );
+                } else if (command === "toggle-new-tab-option") {
+                    browser.storage.local.get(OPTION_ADD_BACKGROUND_TABS_AFTER_CURRENT).then(
+                        result => {
+                            browser.storage.local.set({
+                                [OPTION_ADD_BACKGROUND_TABS_AFTER_CURRENT]: !result[OPTION_ADD_BACKGROUND_TABS_AFTER_CURRENT]
+                            });
+                        }
+                    )
                 }
             }
         });

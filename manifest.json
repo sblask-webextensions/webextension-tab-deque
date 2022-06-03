@@ -24,6 +24,9 @@
             "suggested_key": {
                 "default": "Ctrl+Down"
             }
+        },
+        "toggle-new-tab-option": {
+            "description": "Toggle new background tab option"
         }
     },
     "browser_action": {
