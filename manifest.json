@@ -26,6 +26,12 @@
             }
         }
     },
+    "browser_action": {
+        "browser_style": false,
+        "default_icon": "icon.svg",
+        "default_popup": "options/options.html",
+        "default_title": "Tab Deque"
+    },
     "description": "A webextension for better tab handling. Inspired by Opera 12.",
     "homepage_url": "https://github.com/sblask/webextension-tab-deque",
     "icons": {
