@@ -26,7 +26,10 @@
             }
         },
         "toggle-new-tab-option": {
-            "description": "Toggle new background tab option"
+            "description": "Toggle new background tab option",
+            "suggested_key": {
+                "default": "Ctrl+Alt+B"
+            }
         }
     },
     "browser_action": {
