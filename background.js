@@ -61,7 +61,7 @@ browser.tabs.onCreated.addListener(
                     if (!result[OPTION_ADD_BACKGROUND_TABS_AFTER_CURRENT]) {
                         currentDeque.push(tabId);
                     } else {
-                        currentDeque.splice(1, 0, currentTab);
+                        currentDeque.splice(1, 0, tabId);
                     }
                 });
         }
