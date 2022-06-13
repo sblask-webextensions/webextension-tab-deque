@@ -23,7 +23,7 @@ browser.commands.onCommand.addListener(command => {
                             selectTabFromEndOfDeque(windowId);
                         }
                     );
-                } else if (command === "toggle-new-tab-option") {
+                } else if (command === "toggle-add-background-tabs-after-current-option") {
                     browser.storage.local.get(OPTION_ADD_BACKGROUND_TABS_AFTER_CURRENT).then(
                         result => {
                             browser.storage.local.set({

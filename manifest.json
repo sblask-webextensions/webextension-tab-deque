@@ -25,7 +25,7 @@
                 "default": "Ctrl+Down"
             }
         },
-        "toggle-new-tab-option": {
+        "toggle-add-background-tabs-after-current-option": {
             "description": "Toggle \"Add background tabs after current\" option ",
             "suggested_key": {
                 "default": "Ctrl+Alt+B"
