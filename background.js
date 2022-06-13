@@ -125,7 +125,7 @@ function sendTabToEndOfDeque(windowId, tabId) {
 
     removeFromDeque(tabId, currentDeque);
     currentDeque.push(tabId);
-    browser.tabs.update(currentDeque[0], { active: true });
+    browser.tabs.update(currentDeque[0], {active: true});
 }
 
 function selectTabFromEndOfDeque(windowId) {
@@ -134,7 +134,7 @@ function selectTabFromEndOfDeque(windowId) {
 
     removeFromDeque(tabId, currentDeque);
     currentDeque.unshift(tabId);
-    browser.tabs.update(currentDeque[0], { active: true });
+    browser.tabs.update(currentDeque[0], {active: true});
 }
 
 function runOnCurrentTab(givenFunction) {
@@ -156,7 +156,7 @@ function handleRemove(windowId, tabId) {
     const wasFirstAndElementsLeft = removeFromDeque(tabId, currentDeque);
     if (wasFirstAndElementsLeft) {
         nextTabId = currentDeque[0];
-        browser.tabs.update(nextTabId, { active: true });
+        browser.tabs.update(nextTabId, {active: true});
     }
 }
 
