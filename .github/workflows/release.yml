@@ -37,4 +37,4 @@ jobs:
       - run: npm install
       - run: npx commitlint --verbose --from HEAD~${{ github.event_name == 'pull_request' && github.event.pull_request.commits || steps.pushed_commits_count.outputs.pushed_commits_count }} --to HEAD
       - run: npx semantic-release ${{ github.event_name == 'pull_request' && '--dry-run' || '' }}
-      - run: cat package.json
+      - run: ls -lha
