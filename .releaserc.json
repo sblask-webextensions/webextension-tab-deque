@@ -10,7 +10,27 @@
         "@semantic-release/commit-analyzer",
         "@semantic-release/npm",
         "@semantic-release/release-notes-generator",
-        "@semantic-release/github"
+        [
+            "@semantic-release/exec",
+            {
+                "prepareCmd": "./my-build-script.sh ${nextRelease.version}"
+            }
+        ],
+        [
+            "@semantic-release/github",
+            {
+                "assets": [
+                    {
+                        "path": "*${nextRelease.version}-chrome.zip",
+                        "label": "Chrome package"
+                    },
+                    {
+                        "path": "*${nextRelease.version}-firefox.zip",
+                        "label": "Firefox package"
+                    }
+                ]
+            }
+        ]
     ],
     "tagFormat": "${ version }"
 }
