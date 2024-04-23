@@ -3,9 +3,10 @@ name: pre-commit
 on:
   pull_request:
   push:
+  workflow_call:
 
 jobs:
-  Build:
+  pre-commit:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
