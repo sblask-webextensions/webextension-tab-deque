@@ -1,16 +1,15 @@
 {
-    "applications": {
-        "gecko": {
-            "id": "tabdeque@sblask",
-            "strict_min_version": "57.0"
-        }
-    },
     "author": "Sebastian Blask",
     "background": {
         "scripts": [
             "browser-polyfill.js",
             "background.js"
         ]
+    },
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "tabdeque@sblask"
+        }
     },
     "commands": {
         "select-tab-from-end-of-tabdeque": {
@@ -29,11 +28,11 @@
     "description": "A webextension for better tab handling. Inspired by Opera 12.",
     "homepage_url": "https://github.com/sblask/webextension-tab-deque",
     "icons": {
-        "128": "icon-128x128.png",
         "16": "icon-16x16.png",
         "32": "icon-32x32.png",
         "48": "icon-48x48.png",
-        "64": "icon-64x64.png"
+        "64": "icon-64x64.png",
+        "128": "icon-128x128.png"
     },
     "manifest_version": 2,
     "name": "Tab Deque",
@@ -44,5 +43,5 @@
         "contextMenus",
         "storage"
     ],
-    "version": "2.1.1"
+    "version": "x.x.x"
 }
