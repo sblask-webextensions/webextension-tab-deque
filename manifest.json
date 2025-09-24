@@ -24,7 +24,19 @@
             "suggested_key": {
                 "default": "Ctrl+Down"
             }
+        },
+        "toggle-add-background-tabs-after-current-option": {
+            "description": "Toggle \"Add background tabs after current\" option ",
+            "suggested_key": {
+                "default": "Ctrl+Alt+B"
+            }
         }
+    },
+    "browser_action": {
+        "browser_style": false,
+        "default_icon": "icon.svg",
+        "default_popup": "options/options.html",
+        "default_title": "Tab Deque"
     },
     "description": "A webextension for better tab handling. Inspired by Opera 12.",
     "homepage_url": "https://github.com/sblask/webextension-tab-deque",
