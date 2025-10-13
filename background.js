@@ -1,4 +1,5 @@
 const OPTION_DISABLE_KEYBOARD_SHORTCUTS = "disableKeyboardShortcuts";
+const OPTION_ADD_BACKGROUND_TABS_AFTER_CURRENT = "addBackgroundTabsAfterCurrent";
 
 let deques = undefined;
 let nextTabId = undefined;
@@ -22,6 +23,14 @@ browser.commands.onCommand.addListener(command => {
                             selectTabFromEndOfDeque(windowId);
                         }
                     );
+                } else if (command === "toggle-add-background-tabs-after-current-option") {
+                    browser.storage.local.get(OPTION_ADD_BACKGROUND_TABS_AFTER_CURRENT).then(
+                        result => {
+                            browser.storage.local.set({
+                                [OPTION_ADD_BACKGROUND_TABS_AFTER_CURRENT]: !result[OPTION_ADD_BACKGROUND_TABS_AFTER_CURRENT]
+                            });
+                        }
+                    )
                 }
             }
         });
@@ -55,7 +64,14 @@ browser.tabs.onCreated.addListener(
         const currentDeque = backup(getWindowDeques(windowId)).current;
 
         if (currentDeque.indexOf(tabId) === -1) {
-            currentDeque.push(tabId);
+            browser.storage.local.get(OPTION_ADD_BACKGROUND_TABS_AFTER_CURRENT)
+                .then(result => {
+                    if (!result[OPTION_ADD_BACKGROUND_TABS_AFTER_CURRENT]) {
+                        currentDeque.push(tabId);
+                    } else {
+                        currentDeque.splice(1, 0, tabId);
+                    }
+                });
         }
     }
 );
