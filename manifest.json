@@ -1,13 +1,18 @@
 {
     "author": "Sebastian Blask",
     "background": {
+        "service_worker": "background.js",
         "scripts": [
-            "browser-polyfill.js",
             "background.js"
         ]
     },
     "browser_specific_settings": {
         "gecko": {
+            "data_collection_permissions": {
+                "required": [
+                    "none"
+                ]
+            },
             "id": "tabdeque@sblask"
         }
     },
@@ -34,7 +39,8 @@
         "64": "icon-64x64.png",
         "128": "icon-128x128.png"
     },
-    "manifest_version": 2,
+    "manifest_version": 3,
+    "minimum_chrome_version": "148",
     "name": "Tab Deque",
     "options_ui": {
         "page": "options/options.html"
