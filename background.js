@@ -131,7 +131,7 @@ function runWithState(givenFunction) {
         .then(ensureState)
         .then(givenFunction)
         .then(saveState);
-    stateQueue.catch(() => undefined);
+    stateQueue.catch(error => console.error(error));
 }
 
 function ensureState() {
