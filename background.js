@@ -7,30 +7,21 @@ let statePromise = undefined;
 let stateQueue = Promise.resolve();
 
 browser.commands.onCommand.addListener(command => {
-    runWithState(() => {
-        return browser.storage.local.get(OPTION_DISABLE_KEYBOARD_SHORTCUTS)
-            .then(result => {
-                if (result[OPTION_DISABLE_KEYBOARD_SHORTCUTS]) {
-                    return;
-                }
+    runWithState(async () => {
+        const result = await browser.storage.local.get(OPTION_DISABLE_KEYBOARD_SHORTCUTS);
+        if (result[OPTION_DISABLE_KEYBOARD_SHORTCUTS]) {
+            return;
+        }
 
-                if (command === "send-tab-to-end-of-tabdeque") {
-                    return runOnCurrentTab(
-                        (tab) => {
-                            const tabId = tab.id;
-                            const windowId = tab.windowId;
-                            sendTabToEndOfDeque(windowId, tabId);
-                        }
-                    );
-                } else if (command === "select-tab-from-end-of-tabdeque") {
-                    return runOnCurrentTab(
-                        (tab) => {
-                            const windowId = tab.windowId;
-                            selectTabFromEndOfDeque(windowId);
-                        }
-                    );
-                }
-            });
+        const currentTab = (await browser.tabs.query({active: true, currentWindow: true}))[0];
+        if (command === "send-tab-to-end-of-tabdeque") {
+            const tabId = currentTab.id;
+            const windowId = currentTab.windowId;
+            await sendTabToEndOfDeque(windowId, tabId);
+        } else if (command === "select-tab-from-end-of-tabdeque") {
+            const windowId = currentTab.windowId;
+            await selectTabFromEndOfDeque(windowId);
+        }
     });
 });
 
@@ -50,11 +41,7 @@ browser.runtime.onInstalled.addListener(() => {
 browser.contextMenus.onClicked.addListener(
     (info, tab) => {
         if (info.menuItemId === "send-tab-to-end-of-tabdeque") {
-            runWithState(() => {
-                const tabId = tab.id;
-                const windowId = tab.windowId;
-                sendTabToEndOfDeque(windowId, tabId);
-            });
+            runWithState(() => sendTabToEndOfDeque(tab.windowId, tab.id));
         }
     }
 );
@@ -108,21 +95,11 @@ browser.tabs.onActivated.addListener(
 );
 
 browser.tabs.onRemoved.addListener(
-    (tabId, removeInfo) => {
-        runWithState(() => {
-            const windowId = removeInfo.windowId;
-            handleRemove(windowId, tabId);
-        });
-    }
+    (tabId, removeInfo) => runWithState(() => handleRemove(removeInfo.windowId, tabId))
 );
 
 browser.tabs.onDetached.addListener(
-    (tabId, detachInfo) => {
-        runWithState(() => {
-            const windowId = detachInfo.oldWindowId;
-            handleRemove(windowId, tabId);
-        });
-    }
+    (tabId, detachInfo) => runWithState(() => handleRemove(detachInfo.oldWindowId, tabId))
 );
 
 function runWithState(givenFunction) {
@@ -145,33 +122,30 @@ function ensureState() {
     return statePromise;
 }
 
-function restoreState() {
-    return browser.storage.session.get(STATE_STORAGE_KEY)
-        .then(result => {
-            const state = result[STATE_STORAGE_KEY];
+async function restoreState() {
+    const result = await browser.storage.session.get(STATE_STORAGE_KEY);
+    const state = result[STATE_STORAGE_KEY];
 
-            if (state && state.deques) {
-                deques = state.deques;
-                nextTabId = state.nextTabId || undefined;
-                return undefined;
-            }
+    if (state && state.deques) {
+        deques = state.deques;
+        nextTabId = state.nextTabId || undefined;
+        return;
+    }
 
-            return browser.windows.getAll({
-                populate: true,
-                windowTypes: ["normal"],
-            }).then(initializeDeques);
-        });
+    const windowInfoArray = await browser.windows.getAll({
+        populate: true,
+        windowTypes: ["normal"],
+    });
+    initializeDeques(windowInfoArray);
 }
 
 function saveState() {
-    return browser.storage.session.set(
-        {
-            [STATE_STORAGE_KEY]: {
-                deques: deques,
-                nextTabId: nextTabId,
-            },
-        }
-    );
+    return browser.storage.session.set({
+        [STATE_STORAGE_KEY]: {
+            deques: deques,
+            nextTabId: nextTabId,
+        },
+    });
 }
 
 function sendTabToEndOfDeque(windowId, tabId) {
@@ -179,7 +153,7 @@ function sendTabToEndOfDeque(windowId, tabId) {
 
     removeFromDeque(tabId, currentDeque);
     currentDeque.push(tabId);
-    browser.tabs.update(currentDeque[0], {active: true});
+    return browser.tabs.update(currentDeque[0], {active: true});
 }
 
 function selectTabFromEndOfDeque(windowId) {
@@ -188,20 +162,7 @@ function selectTabFromEndOfDeque(windowId) {
 
     removeFromDeque(tabId, currentDeque);
     currentDeque.unshift(tabId);
-    browser.tabs.update(currentDeque[0], {active: true});
-}
-
-function runOnCurrentTab(givenFunction) {
-    browser.tabs.query(
-        {
-            active: true,
-            currentWindow: true,
-        }
-    ).then(
-        (tabs) => {
-            givenFunction(tabs[0]);
-        }
-    );
+    return browser.tabs.update(currentDeque[0], {active: true});
 }
 
 function handleRemove(windowId, tabId) {
@@ -210,7 +171,7 @@ function handleRemove(windowId, tabId) {
     const wasFirstAndElementsLeft = removeFromDeque(tabId, currentDeque);
     if (wasFirstAndElementsLeft) {
         nextTabId = currentDeque[0];
-        browser.tabs.update(nextTabId, {active: true});
+        return browser.tabs.update(nextTabId, {active: true});
     }
 }
 
