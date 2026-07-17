@@ -136,7 +136,10 @@ function runWithState(givenFunction) {
 
 function ensureState() {
     if (statePromise === undefined) {
-        statePromise = restoreState();
+        statePromise = restoreState().catch(error => {
+            statePromise = undefined;
+            throw error;
+        });
     }
 
     return statePromise;
