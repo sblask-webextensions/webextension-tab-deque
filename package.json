@@ -19,5 +19,6 @@
         "german": "./bin/prepare-firefox.sh 0.0.0 && web-ext run --source-dir dist-firefox --pref=general.useragent.locale=de-DE --pref=intl.locale.matchOS=false"
     },
     "title": "A firefox extension for better tab handling. Inspired by Opera 12.",
+    "type": "module",
     "version": "x.x.x"
 }
