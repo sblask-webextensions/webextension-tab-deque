@@ -6,7 +6,7 @@ let nextTabId = undefined;
 let statePromise = undefined;
 let stateQueue = Promise.resolve();
 
-browser.commands.onCommand.addListener(command => {
+browser.commands.onCommand.addListener((command) => {
     runWithState(async () => {
         const result = await browser.storage.local.get(OPTION_DISABLE_KEYBOARD_SHORTCUTS);
         if (result[OPTION_DISABLE_KEYBOARD_SHORTCUTS]) {
@@ -108,12 +108,12 @@ function runWithState(givenFunction) {
         .then(ensureState)
         .then(givenFunction)
         .then(saveState);
-    stateQueue.catch(error => console.error(error));
+    stateQueue.catch((error) => console.error(error));
 }
 
 function ensureState() {
     if (statePromise === undefined) {
-        statePromise = restoreState().catch(error => {
+        statePromise = restoreState().catch((error) => {
             statePromise = undefined;
             throw error;
         });

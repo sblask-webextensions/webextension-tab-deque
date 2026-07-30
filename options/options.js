@@ -5,7 +5,7 @@ function restoreOptions() {
     browser.storage.local.get([
         OPTION_DISABLE_KEYBOARD_SHORTCUTS,
     ]).then(
-        result => {
+        (result) => {
             setBooleanValue(CSS_ID_DISABLE_KEYBOARD_SHORTCUTS, result[OPTION_DISABLE_KEYBOARD_SHORTCUTS]);
         }
     );
