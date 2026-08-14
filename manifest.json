@@ -1,4 +1,9 @@
 {
+    "action": {
+        "default_icon": "icon.svg",
+        "default_popup": "options/options.html",
+        "default_title": "Tab Deque"
+    },
     "author": "Sebastian Blask",
     "background": {
         "scripts": [
