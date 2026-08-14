@@ -173,13 +173,22 @@ async function restoreState() {
     initializeDeques(windowInfoArray);
 }
 
-function saveState() {
-    return browser.storage.session.set({
+async function saveState() {
+    await browser.storage.session.set({
         [STATE_STORAGE_KEY]: {
             deques: deques,
             nextTabId: nextTabId,
         },
     });
+
+    if (browser.tabs.moveInSuccession) {
+        for (const windowDeques of Object.values(deques)) {
+            const currentDeque = windowDeques.current;
+            if (currentDeque.length > 0) {
+                await browser.tabs.moveInSuccession(currentDeque);
+            }
+        }
+    }
 }
 
 function sendTabToEndOfDeque(windowId, tabId) {
@@ -202,10 +211,14 @@ function selectTabFromEndOfDeque(windowId) {
 function handleRemove(windowId, tabId) {
     const currentDeque = backup(getWindowDeques(windowId)).current;
 
-    const wasFirstAndElementsLeft = removeFromDeque(tabId, currentDeque);
-    if (wasFirstAndElementsLeft) {
-        nextTabId = currentDeque[0];
-        return browser.tabs.update(nextTabId, {active: true});
+    if (browser.tabs.moveInSuccession) {
+        removeFromDeque(tabId, currentDeque);
+    } else {
+        const wasFirstAndElementsLeft = removeFromDeque(tabId, currentDeque);
+        if (wasFirstAndElementsLeft) {
+            nextTabId = currentDeque[0];
+            return browser.tabs.update(nextTabId, {active: true});
+        }
     }
 }
 
