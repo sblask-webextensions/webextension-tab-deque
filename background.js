@@ -1,11 +1,31 @@
 const OPTION_DISABLE_KEYBOARD_SHORTCUTS = "disableKeyboardShortcuts";
 const OPTION_ADD_BACKGROUND_TABS_AFTER_CURRENT = "addBackgroundTabsAfterCurrent";
+const BADGE_ADD_BACKGROUND_TABS_AFTER_CURRENT = "i";
 const STATE_STORAGE_KEY = "tabDequeState";
 
 let deques = undefined;
 let nextTabId = undefined;
 let statePromise = undefined;
 let stateQueue = Promise.resolve();
+
+updateBadge();
+browser.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName === "local" && changes[OPTION_ADD_BACKGROUND_TABS_AFTER_CURRENT]) {
+        updateBadge();
+    }
+});
+
+async function updateBadge() {
+    try {
+        const result = await browser.storage.local.get(OPTION_ADD_BACKGROUND_TABS_AFTER_CURRENT);
+        const enabled = result[OPTION_ADD_BACKGROUND_TABS_AFTER_CURRENT];
+        await browser.action.setBadgeText({
+            text: enabled ? BADGE_ADD_BACKGROUND_TABS_AFTER_CURRENT : "",
+        });
+    } catch (error) {
+        console.error(error);
+    }
+}
 
 browser.commands.onCommand.addListener((command) => {
     runWithState(async () => {
